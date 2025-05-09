@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FeatureRequest": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

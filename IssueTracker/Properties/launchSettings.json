@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "IssueTracker": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
