@@ -1,10 +1,9 @@
-﻿namespace IssueTracker.IssueManager.Domain.Models;
-public class UserRoles
+﻿public class UserRoles
 {
     public int Id { get; set; }
     public string RoleName { get; set; } = default!;
     public int RoleEnumNo { get; set; }
-    public string RoleDescription { get; set; } = string.Empty;
+    public string RoleDescription { get; set; } = default!;
 
 }
 

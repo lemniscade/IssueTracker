@@ -1,7 +1,4 @@
-﻿using IssueTracker.IssueManager.Domain.Exceptions;
-
-namespace IssueManager.Domain.ValueObjects;
-public record UserId
+﻿public record UserId
 {
     public Guid Value { get; }
     private UserId(Guid value) => Value = value;

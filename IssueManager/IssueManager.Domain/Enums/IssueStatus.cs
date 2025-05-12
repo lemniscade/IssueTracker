@@ -1,4 +1,4 @@
-﻿namespace IssueTracker.IssueManager.Domain.Enums;
+﻿
 public enum IssueStatus
 {
     Proposed=1,

@@ -1,7 +1,3 @@
-using IssueManager.Domain.Abstractions;
-using IssueManager.Domain.ValueObjects;
-
-namespace IssueManager.Domain.Models;
 public class User : Aggregate<UserId>
 {
     public new int Id { get; set; }

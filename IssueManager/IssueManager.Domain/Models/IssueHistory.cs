@@ -1,4 +1,3 @@
-namespace IssueManager.Domain.Models;
 public class IssueHistory
 {
     public int Id { get; set; }
