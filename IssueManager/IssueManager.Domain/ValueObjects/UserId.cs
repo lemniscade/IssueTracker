@@ -1,4 +1,5 @@
-﻿public record UserId
+﻿namespace IssueManager.IssueManager.Domain.ValueObjects;
+public record UserId
 {
     public Guid Value { get; }
     private UserId(Guid value) => Value = value;
@@ -7,7 +8,7 @@
         ArgumentNullException.ThrowIfNull(value);
         if (value == Guid.Empty)
         {
-            throw new DomainException("CustomerId cannot be empty.");
+            throw new DomainException("User cannot be empty.");
         }
 
         return new UserId(value);

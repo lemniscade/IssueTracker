@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace IssueManager.IssueManager.Domain.Enums
+﻿namespace IssueManager.IssueManager.Domain.Enums;
+public enum Priority
 {
-    internal class Priority
-    {
-    }
+    Low = 1,
+    Medium = 2,
+    High = 3,
 }

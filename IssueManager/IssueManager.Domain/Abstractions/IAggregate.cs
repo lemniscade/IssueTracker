@@ -1,4 +1,5 @@
-﻿public interface IAggregate<T> : IAggregate, IEntity<T>
+﻿namespace IssueManager.IssueManager.Domain.Abstractions;
+public interface IAggregate<T> : IAggregate, IEntity<T>
 {
 }
 

@@ -1,3 +1,8 @@
+using IssueManager.IssueManager.Domain.Abstractions;
+using IssueManager.IssueManager.Domain.ValueObjects;
+
+namespace IssueManager.IssueManager.Domain.Models;
+
 public class User : Aggregate<UserId>
 {
     public new int Id { get; set; }
@@ -8,9 +13,6 @@ public class User : Aggregate<UserId>
     public new DateTime CreatedAt { get; set; }
     public DateTime ModifyAt { get; set; }
     public string ModifyBy { get; set; } = default!;
-
-    public string CreateBy { get;set; } = default!;
-    public DateTime? LastLoginAt { get; set; }
-
-    public Role Role { get; set; } = default!;
+    public new string CreatedBy { get;set; } = default!;
+    public UserRoles Role { get; set; } = default!;
 }

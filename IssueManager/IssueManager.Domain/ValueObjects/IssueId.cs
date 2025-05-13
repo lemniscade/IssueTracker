@@ -1,4 +1,5 @@
-﻿public record IssueId
+﻿namespace IssueManager.IssueManager.Domain.ValueObjects;
+public record IssueId
 {
     public Guid Value { get; }
     private IssueId(Guid value) => Value = value;

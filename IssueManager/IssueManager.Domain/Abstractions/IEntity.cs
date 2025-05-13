@@ -1,4 +1,5 @@
-﻿public interface IEntity<T> : IEntity
+﻿namespace IssueManager.IssueManager.Domain.Abstractions;
+public interface IEntity<T> : IEntity
 {
     public T Id { get; set; }
 }

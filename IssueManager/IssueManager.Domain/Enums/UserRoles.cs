@@ -1,4 +1,4 @@
-﻿
+﻿namespace IssueManager.IssueManager.Domain.Enums;
 public enum UserRoles
 {
     Developer = 1,

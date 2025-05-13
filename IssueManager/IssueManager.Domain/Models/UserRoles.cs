@@ -1,4 +1,5 @@
-﻿public class UserRoles
+﻿namespace IssueManager.IssueManager.Domain.Models;
+public class UserRoles
 {
     public int Id { get; set; }
     public string RoleName { get; set; } = default!;
