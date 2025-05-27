@@ -2,21 +2,19 @@
 
 namespace IssueManager.IssueManager.Application.Dtos;
 public record IssueDto(
-    int Id,
+    Guid Id,
+    Guid UserId,
+    Guid AssigneeId,
     string Title,
     string Description,
     string Type,
     int StatusId,
     int? Priority,
-    int ProjectId,
-    int CreatedBy,
-    int? AssignedTo,
+    Guid CreatedBy,
     DateTime? DueDate,
     DateTime CreatedAt,
     DateTime? UpdatedAt,
     int Status,
-    User Creator,
-    User? Assignee,
-    Task Project
+    ProjectDto Project
 );
 

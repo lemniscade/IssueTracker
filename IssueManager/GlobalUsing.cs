@@ -2,3 +2,4 @@
 global using Task = IssueManager.IssueManager.Domain.Models.Task;
 global using IssueManager.IssueManager.Domain.Abstractions;
 global using IssueManager.IssueManager.Domain.Exceptions;
+global using IssueManager.IssueManager.Application.Dtos;
