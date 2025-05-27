@@ -1,8 +1,10 @@
 using IssueManager.IssueManager.Domain.ValueObjects;
 
 namespace IssueManager.IssueManager.Domain.Models;
-public class Issue:Aggregate<IssueId>
+public class Issue : Aggregate<IssueId>
 {
+    private readonly List<IssueItem> _issueItems = new();
+    public IReadOnlyList<IssueItem> Issues=> _issueItems.AsReadOnly();
     public UserId UserId { get; set; } = default!;
 
     public UserId? AssigneeId { get; set; } = default!;
@@ -18,55 +20,52 @@ public class Issue:Aggregate<IssueId>
     public int Status { get; set; } = default!;
     public Task Project { get; set; } = default!;
 
-    //public static Issue Create(IssueId id, UserId userId, string issueTitle, string issueDescription, string type, int statusId, int priority, UserId createdBy, DateTime dueDate, DateTime createdAt, DateTime updatedAt, int status, Task project)
-    //{
-    //    var issue = new Issue
-    //    {
-    //        Id = id,
-    //        UserId = userId,
-    //        Title = issueTitle,
-    //        Description = issueDescription,
-    //        Type = type,
-    //        StatusId = statusId,
-    //        Priority = priority,
-    //        CreatedBy = createdBy,
-    //        DueDate = dueDate,
-    //        CreatedAt = createdAt,
-    //        UpdatedAt = updatedAt,
-    //        Status = status,
-    //        Project = project
-    //    };
-    //    return issue;
-    //}
+    public static Issue Create(IssueId id, UserId userId, string issueTitle, string issueDescription, string type, int statusId, int priority, UserId createdBy, DateTime dueDate, DateTime createdAt, DateTime updatedAt, int status, Task project)
+    {
+        var issue = new Issue
+        {
+            Id = id,
+            UserId = userId,
+            Title = issueTitle,
+            Description = issueDescription,
+            Type = type,
+            StatusId = statusId,
+            Priority = priority,
+            CreatedBy = createdBy,
+            DueDate = dueDate,
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt,
+            Status = status,
+            Project = project
+        };
+        return issue;
+    }
 
-    //public void Update(string issueTitle, string issueDescription, string type, int statusId, int priority, DateTime dueDate, DateTime updatedAt, int status, Task project)
-    //{
-    //    Title = issueTitle;
-    //    Description = issueDescription;
-    //    Type = type;
-    //    StatusId = statusId;
-    //    Priority = priority;
-    //    DueDate = dueDate;
-    //    UpdatedAt = updatedAt;
-    //    Status = status;
-    //    Project = project;
-    //}
+    public void Update(string issueTitle, string issueDescription, string type, int statusId, int priority, DateTime dueDate, DateTime updatedAt, int status, Task project)
+    {
+        Title = issueTitle;
+        Description = issueDescription;
+        Type = type;
+        StatusId = statusId;
+        Priority = priority;
+        DueDate = dueDate;
+        UpdatedAt = updatedAt;
+        Status = status;
+        Project = project;
+    }
 
-    //public void Add(ProductId productId, int quantity, decimal price)
-    //{
-    //    ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
-    //    ArgumentOutOfRangeException.ThrowIfNegativeOrZero(price);
+    public void Add(string issueTitle,string issueDescription)
+    {
+        var issueItem = new IssueItem(Id,issueTitle,issueDescription);
+        _issueItems.Add(issueItem);
+    }
 
-    //    var issueItem = new IssueItem(Id, productId, quantity, price);
-    //    _issueItems.Add(issueItem);
-    //}
-
-    //public void Remove(ProductId productId)
-    //{
-    //    var issueItem = _issueItems.FirstOrDefault(x => x.ProductId == productId);
-    //    if (issueItem is not null)
-    //    {
-    //        _issueItems.Remove(issueItem);
-    //    }
-    //}
+    public void Remove(string issueTitle)
+    {
+        var issueItem = _issueItems.FirstOrDefault(x => x.Title == issueTitle);
+        if (issueItem is not null)
+        {
+            _issueItems.Remove(issueItem);
+        }
+    }
 }
