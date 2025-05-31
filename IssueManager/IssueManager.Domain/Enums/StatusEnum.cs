@@ -1,5 +1,5 @@
 ﻿namespace IssueManager.IssueManager.Domain.Enums;
-public enum IssueStatus
+public enum StatusEnum
 {
     Proposed=1,
     Active=2,

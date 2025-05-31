@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace IssueManager.IssueManager.Domain.ValueObjects
 {
-    public record IssueItemId
+    public class AssigneeId
     {
         public Guid Value { get; }
-        private IssueItemId(Guid value) => Value = value;
-        public static IssueItemId Of(Guid value)
+        public AssigneeId() { }
+        private AssigneeId(Guid value) => Value = value;
+        public static AssigneeId Of(Guid value)
         {
             ArgumentNullException.ThrowIfNull(value);
             if (value == Guid.Empty)
@@ -18,7 +19,7 @@ namespace IssueManager.IssueManager.Domain.ValueObjects
                 throw new DomainException("Issue cannot be empty.");
             }
 
-            return new IssueItemId(value);
+            return new AssigneeId(value);
         }
     }
 }

@@ -2,7 +2,8 @@
 public record UserId
 {
     public Guid Value { get; }
-    private UserId(Guid value) => Value = value;
+    public UserId() { }
+    public UserId(Guid value) => Value = value;
     public static UserId Of(Guid value)
     {
         ArgumentNullException.ThrowIfNull(value);

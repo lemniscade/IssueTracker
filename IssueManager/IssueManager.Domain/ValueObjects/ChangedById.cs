@@ -1,9 +1,10 @@
 ﻿namespace IssueManager.IssueManager.Domain.ValueObjects;
-public record OwnerId
+public record ChangedById
 {
     public Guid Value { get; }
-    private OwnerId(Guid value) => Value = value;
-    public static OwnerId Of(Guid value)
+    public ChangedById() { }
+    private ChangedById(Guid value) => Value = value;
+    public static ChangedById Of(Guid value)
     {
         ArgumentNullException.ThrowIfNull(value);
         if (value == Guid.Empty)
@@ -11,6 +12,6 @@ public record OwnerId
             throw new DomainException("Issue cannot be empty.");
         }
 
-        return new OwnerId(value);
+        return new ChangedById(value);
     }
 }

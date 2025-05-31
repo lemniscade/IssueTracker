@@ -1,5 +1,5 @@
 ﻿namespace IssueManager.IssueManager.Domain.Enums;
-public enum Priority
+public enum PriorityEnum
 {
     Low = 1,
     Medium = 2,

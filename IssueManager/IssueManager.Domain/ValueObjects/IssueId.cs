@@ -2,7 +2,8 @@
 public record IssueId
 {
     public Guid Value { get; }
-    private IssueId(Guid value) => Value = value;
+    public IssueId() { }
+    public IssueId(Guid value) => Value = value;
     public static IssueId Of(Guid value)
     {
         ArgumentNullException.ThrowIfNull(value);

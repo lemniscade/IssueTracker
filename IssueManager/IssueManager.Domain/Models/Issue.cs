@@ -1,71 +1,80 @@
 using IssueManager.IssueManager.Domain.ValueObjects;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace IssueManager.IssueManager.Domain.Models;
 public class Issue : Aggregate<IssueId>
 {
-    private readonly List<IssueItem> _issueItems = new();
-    public IReadOnlyList<IssueItem> Issues=> _issueItems.AsReadOnly();
-    public UserId UserId { get; set; } = default!;
+    [Key]
+    public IssueId IssueId { get; set; } = default!;
+    [Required]
+    public UserId CreatedById { get; set; }
 
-    public UserId? AssigneeId { get; set; } = default!;
+    [ForeignKey(nameof(CreatedById))]
+    public User CreatedBy { get; set; } = default!;
+
+    [Required]
+    public UserId AssigneeId { get; set; }
+
+    [ForeignKey(nameof(AssigneeId))]
+    public User Assignee { get; set; } = default!;
+
+    public UserId? ChangedById { get; set; }
+
+    [ForeignKey(nameof(ChangedById))]
+    public User? ChangedBy { get; set; }
+
+    [Required]
     public string Title { get; set; } = default!;
-    public string Description { get; set; } = default!;
-    public string Type { get; set; } = default!;
-    public int StatusId { get; set; }
-    public int Priority { get; set; } = default!;
-    public new required UserId CreatedBy { get; set; }
-    public DateTime? DueDate { get; set; }
-    public new DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public int Status { get; set; } = default!;
-    public Task Project { get; set; } = default!;
 
-    public static Issue Create(IssueId id, UserId userId, string issueTitle, string issueDescription, string type, int statusId, int priority, UserId createdBy, DateTime dueDate, DateTime createdAt, DateTime updatedAt, int status, Task project)
+    [Required]
+    public string Description { get; set; } = default!;
+
+    [Required]
+    public string Type { get; set; } = default!;
+
+    public int StatusEnumId { get; set; } = 1;
+
+    public int PriorityEnumId { get; set; } = 1;
+
+    public DateTime? DueDate { get; set; }
+
+    public new DateTime CreatedAt { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
+    public ProjectId ProjectId { get; set; } = default!;
+    [ForeignKey(nameof(ProjectId))]
+    public Project Project { get; set; } = default!;
+
+    public static Issue Create(IssueId id, string issueTitle, string issueDescription, string type, int statusId, int priority, User createdBy, DateTime dueDate, DateTime createdAt, DateTime updatedAt, Project project)
     {
         var issue = new Issue
         {
             Id = id,
-            UserId = userId,
             Title = issueTitle,
             Description = issueDescription,
             Type = type,
-            StatusId = statusId,
-            Priority = priority,
+            StatusEnumId = statusId,
+            PriorityEnumId = priority,
             CreatedBy = createdBy,
             DueDate = dueDate,
             CreatedAt = createdAt,
             UpdatedAt = updatedAt,
-            Status = status,
             Project = project
         };
         return issue;
     }
 
-    public void Update(string issueTitle, string issueDescription, string type, int statusId, int priority, DateTime dueDate, DateTime updatedAt, int status, Task project)
+    public void Update(string issueTitle, string issueDescription, string type, int statusId, int priority, DateTime dueDate, DateTime updatedAt, Task project)
     {
         Title = issueTitle;
         Description = issueDescription;
         Type = type;
-        StatusId = statusId;
-        Priority = priority;
+        StatusEnumId = statusId;
+        PriorityEnumId = priority;
         DueDate = dueDate;
         UpdatedAt = updatedAt;
-        Status = status;
         Project = project;
     }
 
-    public void Add(string issueTitle,string issueDescription)
-    {
-        var issueItem = new IssueItem(Id,issueTitle,issueDescription);
-        _issueItems.Add(issueItem);
-    }
-
-    public void Remove(string issueTitle)
-    {
-        var issueItem = _issueItems.FirstOrDefault(x => x.Title == issueTitle);
-        if (issueItem is not null)
-        {
-            _issueItems.Remove(issueItem);
-        }
-    }
 }

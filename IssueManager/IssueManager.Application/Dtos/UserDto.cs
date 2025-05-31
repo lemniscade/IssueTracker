@@ -8,7 +8,6 @@ public record UserDto(
     DateTime CreatedAt,
     DateTime ModifyAt,
     string ModifyBy,
-    string CreatedBy,
-    UserRoles Role
+    string CreatedBy
 );
 
