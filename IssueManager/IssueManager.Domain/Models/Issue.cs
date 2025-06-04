@@ -7,13 +7,12 @@ public class Issue : Aggregate<IssueId>
 {
     [Key]
     public IssueId IssueId { get; set; } = default!;
-    [Required]
+
     public UserId CreatedById { get; set; }
 
     [ForeignKey(nameof(CreatedById))]
     public User CreatedBy { get; set; } = default!;
 
-    [Required]
     public UserId AssigneeId { get; set; }
 
     [ForeignKey(nameof(AssigneeId))]
@@ -24,13 +23,10 @@ public class Issue : Aggregate<IssueId>
     [ForeignKey(nameof(ChangedById))]
     public User? ChangedBy { get; set; }
 
-    [Required]
     public string Title { get; set; } = default!;
 
-    [Required]
     public string Description { get; set; } = default!;
 
-    [Required]
     public string Type { get; set; } = default!;
 
     public int StatusEnumId { get; set; } = 1;
@@ -46,34 +42,34 @@ public class Issue : Aggregate<IssueId>
     [ForeignKey(nameof(ProjectId))]
     public Project Project { get; set; } = default!;
 
-    public static Issue Create(IssueId id, string issueTitle, string issueDescription, string type, int statusId, int priority, User createdBy, DateTime dueDate, DateTime createdAt, DateTime updatedAt, Project project)
+    public static Issue Create(string issueTitle, string issueDescription, string type, int? statusId, int? priority, User createdBy, DateTime? dueDate, DateTime? createdAt, Project project)
     {
         var issue = new Issue
         {
-            Id = id,
             Title = issueTitle,
             Description = issueDescription,
             Type = type,
-            StatusEnumId = statusId,
-            PriorityEnumId = priority,
+            StatusEnumId = (int)statusId,
+            PriorityEnumId = (int)priority,
             CreatedBy = createdBy,
             DueDate = dueDate,
-            CreatedAt = createdAt,
-            UpdatedAt = updatedAt,
+            CreatedAt = (DateTime)createdAt,
             Project = project
         };
         return issue;
     }
 
-    public void Update(string issueTitle, string issueDescription, string type, int statusId, int priority, DateTime dueDate, DateTime updatedAt, Task project)
+    public void Update(IssueId issueId,string issueTitle, string issueDescription, string type, int? statusId, int? priority, DateTime? dueDate,User changedBy, DateTime? changedAt, Project project)
     {
+        IssueId=issueId;
         Title = issueTitle;
         Description = issueDescription;
         Type = type;
-        StatusEnumId = statusId;
-        PriorityEnumId = priority;
+        StatusEnumId = (int)statusId;
+        PriorityEnumId = (int)priority;
         DueDate = dueDate;
-        UpdatedAt = updatedAt;
+        UpdatedAt = (DateTime)changedAt;
+        ChangedBy= changedBy;
         Project = project;
     }
 

@@ -19,7 +19,7 @@ namespace IssueManager.IssueManager.Infrastructure.Data
 
         public DbSet<Issue> Issues => Set<Issue>();
 
-        public DbSet<Project> Projects => Set<Task>();
+        public DbSet<Project> Projects => Set<Project>();
 
         public DbSet<User> Users => Set<User>();
         private readonly IConfiguration _configuration;
@@ -47,8 +47,8 @@ namespace IssueManager.IssueManager.Infrastructure.Data
             base.OnModelCreating(modelBuilder);
 
             var projectIdConverterforProject = new ValueConverter<ProjectId, Guid>(
-    id => id.Value,
-    value => new ProjectId(value)
+                id => id.Value,
+                value => new ProjectId(value)
 );
 
             modelBuilder.Entity<Project>()
@@ -60,14 +60,10 @@ namespace IssueManager.IssueManager.Infrastructure.Data
 
             modelBuilder.Ignore<ProjectId>();
 
-
-
-
-
             var uerIdConverter = new ValueConverter<UserId, Guid>(
-    id => id.Value,
-    value => new UserId(value)
-);
+                id => id.Value,
+                value => new UserId(value)
+             );
 
             modelBuilder.Entity<User>()
                 .Property(p => p.UserId)
@@ -78,14 +74,6 @@ namespace IssueManager.IssueManager.Infrastructure.Data
 
             modelBuilder.Ignore<UserId>();
 
-
-
-
-
-
-
-
-
             modelBuilder.Entity<User>()
             .Property(e => e.UserId)
             .HasConversion(
@@ -94,19 +82,8 @@ namespace IssueManager.IssueManager.Infrastructure.Data
             );
 
             modelBuilder.Entity<User>()
-        .HasKey(p => p.UserId);
+            .HasKey(p => p.UserId);
 
-
-
-
-
-
-
-
-
-
-
-            // Value Object: IssueId -> Guid
             var issueIdConverter = new ValueConverter<IssueId, Guid>(
                 v => v.Value,
                 v => new IssueId(v)
@@ -119,7 +96,6 @@ namespace IssueManager.IssueManager.Infrastructure.Data
             modelBuilder.Entity<Issue>()
                 .HasKey(i => i.IssueId);
 
-            // ProjectId için de aynısını yap
             var projectIdConverter = new ValueConverter<ProjectId, Guid>(
                 v => v.Value,
                 v => new ProjectId(v)
@@ -129,14 +105,12 @@ namespace IssueManager.IssueManager.Infrastructure.Data
                 .Property(i => i.ProjectId)
                 .HasConversion(projectIdConverter);
 
-            // İlişkiler (gerekirse)
             modelBuilder.Entity<Issue>()
                 .HasOne(i => i.Project)
                 .WithMany(p => p.Issues)
                 .HasForeignKey(i => i.ProjectId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // İlişkiler için kullanıcılar
             modelBuilder.Entity<Issue>()
                 .HasOne(i => i.CreatedBy)
                 .WithMany()
@@ -155,7 +129,6 @@ namespace IssueManager.IssueManager.Infrastructure.Data
                 .HasForeignKey(i => i.ChangedById)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // EF'nin IssueId sınıfını entity sanmaması için IGNORE et
             modelBuilder.Ignore<IssueId>();
             modelBuilder.Ignore<ProjectId>();
 
@@ -196,4 +169,4 @@ namespace IssueManager.IssueManager.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
-    }
+}
