@@ -21,6 +21,14 @@ namespace IssueTracker.Business.Validations
                 .Length(10, 500).WithMessage("Description must be between 10 and 500 characters.");
             RuleFor(issue => issue.Effort)
                 .GreaterThan(0).WithMessage("Effort must be a bigger than zero.");
+            RuleFor(issue => issue.Assignee)
+                .NotNull().WithMessage("Assignee is required.").ChildRules(child =>
+                {
+                    child.RuleFor(assignee => assignee.Username)
+                        .NotEmpty().WithMessage("Assignee username is required.").Length(3,20);
+                });
+
+
         }
     }
 }

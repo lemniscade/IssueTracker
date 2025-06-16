@@ -15,6 +15,7 @@ namespace IssueTracker.Business.Services
     {
         private readonly IValidator<Issue> _validator;
         private readonly IIssueRepository _issueRepository;
+
         public IssueService(IValidator<Issue> validator,IIssueRepository issueRepository)
         {
             _validator = validator;
