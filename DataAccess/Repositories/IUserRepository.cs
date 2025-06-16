@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IssueTracker.Entity.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +12,7 @@ namespace IssueTracker.DataAccess.Repositories
         bool Create(string username, string password);
         bool Update(string oldUsername, string? newUsername, string? password);
         bool Delete(string username);
+
+        bool IsUserExist(string username,string password);
     }
 }

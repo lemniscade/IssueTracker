@@ -9,11 +9,13 @@ namespace IssueTracker.DataAccess.Repositories
 {
     public interface IProjectRepository
     {
-        bool Create(string title, string description, int? statusId, int? priority, string assigneeUsername, string createdUsername, int? effort, Project? project);
+        bool Create(string title, string description, string assigneeUsername, string createdUsername);
         bool Update(string findingTitle, string? title, string? description, string? assigneeUsername);
         bool Delete(string title);
-        public List<Issue> GetCreated(string title, string username);
-        public List<Issue> GetAssigned(string title, string username);
-        public List<Issue> GetAll(string title, string username);
+        //public List<Issue> GetCreated(string title, string username);
+        //public List<Issue> GetAssigned(string title, string username);
+        //public List<Issue> GetAll(string title, string username);
+
+        List<Project> GetAll(string? username, string? title);
     }
 }

@@ -32,7 +32,7 @@ namespace IssueTracker.Business.Logging
         {
             using (var context = new ApplicationDbContext())
             {
-                return context.Logs.Where(i=>i.CreatedAt<end && i.CreatedAt>start).ToList();
+                return context.Logs.Where(i=>i.CreatedAt<=end && i.CreatedAt>=start).ToList();
             }
         }
     }
