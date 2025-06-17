@@ -22,11 +22,14 @@ namespace IssueTracker.Business.Validations
             RuleFor(issue => issue.Effort)
                 .GreaterThan(0).WithMessage("Effort must be a bigger than zero.");
             RuleFor(issue => issue.Assignee)
-                .NotNull().WithMessage("Assignee is required.").ChildRules(child =>
-                {
-                    child.RuleFor(assignee => assignee.Username)
-                        .NotEmpty().WithMessage("Assignee username is required.").Length(3,20);
-                });
+                .NotNull().WithMessage("Assignee is required.");
+                //.ChildRules(child =>
+                //{
+                //    child.RuleFor(assignee => assignee.Username)
+                //        .NotEmpty().WithMessage("Assignee username is required.").Length(3,20);
+                //});
+            RuleFor(issue => issue.Effort).NotEmpty().WithMessage("Effort is required.")
+                .GreaterThanOrEqualTo(0).WithMessage("Effort must be a non-negative integer.");
 
 
         }

@@ -78,15 +78,15 @@ namespace IssueTracker.DataAccess.Repositories
                         if (title != null) issue.Title = title;
                         if (description != null) issue.Description = description;
                         if (type != null) issue.TypeEnumId = (int)type;
-                        if (statusId.HasValue) issue.StatusEnumId = statusId.Value;
-                        if (priority.HasValue) issue.PriorityEnumId = priority.Value;
+                        if (statusId!=null) issue.StatusEnumId = statusId.Value;
+                        if (priority!=null) issue.PriorityEnumId = priority.Value;
                         if (assigneeUsername != null || assigneeUsername != "") issue.Assignee = context.Users.FirstOrDefault(u => u.Username == assigneeUsername) ?? throw new ArgumentException("Assignee not found", nameof(assigneeUsername));
                         if (updatedUsername != null || updatedUsername != "")
                         {
                             issue.ChangedBy = context.Users.FirstOrDefault(u => u.Username == updatedUsername) ?? throw new ArgumentException("Updater not found", nameof(updatedUsername));
                             issue.UpdatedAt = DateTime.Now;
                         }
-                        if (effort.HasValue) issue.Effort = effort.Value;
+                        if (effort!=null) issue.Effort = effort.Value;
                         if (projectTitle != null || projectTitle != "")
                         {
                             issue.Project = context.Projects.FirstOrDefault(p => p.Title == projectTitle) ?? throw new ArgumentException("Project not found", nameof(projectTitle));
@@ -96,7 +96,12 @@ namespace IssueTracker.DataAccess.Repositories
                     var validator = new IssueValidator();
                     var validationResult = validator.Validate(issue);
                     if (!validationResult.IsValid)
-                        throw new ValidationException(validationResult.Errors);
+                    {
+                        foreach (var error in validationResult.Errors)
+                        {
+                            Console.WriteLine($"Hata: {error.ErrorMessage}");
+                        }
+                    }
 
 
                     if (title != null)

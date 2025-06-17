@@ -37,8 +37,6 @@ namespace IssueTracker.DataAccess.Repositories
         }
         public bool Create(string username, string password)
         {
-            while (true)
-            {
                 using (var context = new ApplicationDbContext())
                 {
                     var user = new User
@@ -52,23 +50,18 @@ namespace IssueTracker.DataAccess.Repositories
                     return context.SaveChanges() > 0;
                 }
             }
-        }
         public bool Update(string oldUsername, string newUsername, string password)
         {
-            while (true)
-            {
                 try
                 {
                     using (var context = new ApplicationDbContext())
                     {
                         var user = context.Users.FirstOrDefault(u => u.Username == oldUsername);
-                        //if (user != null)
-                        //{
                             user.Username = newUsername;
-                            user.Password = HashPassword(password);
-                            ValidateUser(user);
-                            return context.SaveChanges() > 0;
-                        //}
+                            user.Password = password;
+                        ValidateUser(user);
+                        user.Password = HashPassword(password);
+                        return context.SaveChanges() > 0;
                     }
                 }
                 catch (BusinessException ex)
@@ -77,7 +70,6 @@ namespace IssueTracker.DataAccess.Repositories
                     return false;
                 }
             }
-        }
         public bool Delete(string username)
         {
             using (var context = new ApplicationDbContext())

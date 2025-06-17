@@ -1,4 +1,7 @@
-﻿using IssueTracker.Business.UI;
+﻿using FluentValidation;
+using IssueTracker.Business.Services;
+using IssueTracker.Business.UI;
+using IssueTracker.Business.Validations;
 using IssueTracker.Entity;
 using IssueTracker.Entity.Models;
 using System;
@@ -11,10 +14,16 @@ namespace IssueTracker.DataAccess.Repositories
 {
     public class ProjectRepository:IProjectRepository
     {
-        ConsoleUI consoleUI = new ConsoleUI();
+        private string usernameOfExistUser;
+        IValidator<User> validatorForUser = new UserValidator();
+        public ProjectRepository()
+        {
+            IUserRepository userRepository = new UserRepository(validatorForUser);
+            UserService userService = new UserService(validatorForUser, userRepository);
+            this.usernameOfExistUser = userService.usernameOfExistUser;
+        }
         public bool Create(string title, string description, string assigneeUsername)
         {
-            string username = consoleUI.getCurrentUser();
             using (var context = new ApplicationDbContext())
             {
                 Project project = new Project
@@ -22,7 +31,7 @@ namespace IssueTracker.DataAccess.Repositories
                     Title = title,
                     Description = description,
                     Assignee = context.Users.FirstOrDefault(u => u.Username == assigneeUsername),
-                    CreatedBy = context.Users.FirstOrDefault(u => u.Username == username)
+                    CreatedBy = context.Users.FirstOrDefault(u => u.Username == usernameOfExistUser)
                 };
                 context.Projects.Add(project);
                 return context.SaveChanges() > 0;
@@ -30,13 +39,12 @@ namespace IssueTracker.DataAccess.Repositories
         }
         public bool Update(string findingTitle,string? title, string? description, string? assigneeUsername)
         {
-            string username = consoleUI.getCurrentUser();
             using (var context = new ApplicationDbContext()) {
                 Project project = context.Projects.FirstOrDefault(p => p.Title == findingTitle);
                 project.Title = title ?? project.Title;
                 project.Description = description ?? project.Description;
                 project.Assignee = assigneeUsername != null ? context.Users.FirstOrDefault(u => u.Username == assigneeUsername) : project.Assignee;
-                project.ChangedBy = context.Users.FirstOrDefault(u => u.Username == username);
+                project.ChangedBy = context.Users.FirstOrDefault(u => u.Username == usernameOfExistUser);
                 project.ChangedAt = DateTime.Now;
                 return context.SaveChanges() > 0;
             }
