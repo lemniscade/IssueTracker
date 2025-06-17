@@ -1,4 +1,6 @@
-﻿using IssueTracker.Entity;
+﻿using FluentValidation;
+using IssueTracker.Business.Exceptions;
+using IssueTracker.Entity;
 using IssueTracker.Entity.Models;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -6,6 +8,7 @@ using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -16,35 +19,65 @@ namespace IssueTracker.DataAccess.Repositories
     public class UserRepository : IUserRepository
     {
         public User user;
+        private readonly IValidator<User> _validator;
+        public UserRepository(IValidator<User> validator)
+        {
+            _validator = validator;
+        }
+        public void ValidateUser(User user)
+        {
+            var validationResult = _validator.Validate(user);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    Console.WriteLine($"Hata: {error.ErrorMessage}");
+                }
+            }
+        }
         public bool Create(string username, string password)
         {
-            using (var context = new ApplicationDbContext())
+            while (true)
             {
-                var user = new User
+                using (var context = new ApplicationDbContext())
                 {
-                    Username = username,
-                    Password = HashPassword(password)
-                };
-                context.Users.Add(user);
-                return context.SaveChanges() > 0;
-            }
-        }
-
-        public bool Update(string oldUsername, string newUsername, string password)
-        {
-            using (var context = new ApplicationDbContext())
-            {
-                var user = context.Users.FirstOrDefault(u => u.Username == oldUsername);
-                if (user != null)
-                {
-                    user.Username = newUsername;
+                    var user = new User
+                    {
+                        Username = username,
+                        Password = password
+                    };
+                    ValidateUser(user);
                     user.Password = HashPassword(password);
+                    context.Users.Add(user);
                     return context.SaveChanges() > 0;
                 }
-                return false;
             }
         }
-
+        public bool Update(string oldUsername, string newUsername, string password)
+        {
+            while (true)
+            {
+                try
+                {
+                    using (var context = new ApplicationDbContext())
+                    {
+                        var user = context.Users.FirstOrDefault(u => u.Username == oldUsername);
+                        //if (user != null)
+                        //{
+                            user.Username = newUsername;
+                            user.Password = HashPassword(password);
+                            ValidateUser(user);
+                            return context.SaveChanges() > 0;
+                        //}
+                    }
+                }
+                catch (BusinessException ex)
+                {
+                    Console.WriteLine("Kullanıcı bulunamadı. Lütfen tekrar deneyin.");
+                    return false;
+                }
+            }
+        }
         public bool Delete(string username)
         {
             using (var context = new ApplicationDbContext())
@@ -52,7 +85,7 @@ namespace IssueTracker.DataAccess.Repositories
                 var user = context.Users.FirstOrDefault(u => u.Username == username);
                 if (user != null)
                 {
-                    context.Users.Remove(user);
+                    user.IsActive=false;
                     return context.SaveChanges() > 0;
                 }
                 return false;
@@ -64,7 +97,7 @@ namespace IssueTracker.DataAccess.Repositories
             string passwordHash = HashPassword(password);
             using (var context = new ApplicationDbContext())
             {
-                User user = context.Users.FirstOrDefault(u => u.Username == username && u.Password == passwordHash);
+                User user = context.Users.FirstOrDefault(u => u.Username == username && u.Password == passwordHash && u.IsActive!=false);
                 this.user = user;
                 if (user != null)
                 {
@@ -86,5 +119,7 @@ namespace IssueTracker.DataAccess.Repositories
                 return Convert.ToBase64String(hash);
             }
         }
+
+
     }
 }

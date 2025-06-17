@@ -10,8 +10,8 @@ namespace IssueTracker.Business.Services
     public interface IProjectService
     {
         IEnumerable<Project> GetAllProjects(string? title, string? username);
-        void CreateProject(string title, string description, string assigneeUsername, string createdUsername);
-        void UpdateProject(string findingTitle, string? title, string? description, string? assigneeUsername, string? updatedUsername);
+        void CreateProject(string title, string description, string assigneeUsername);
+        void UpdateProject(string findingTitle, string? title, string? description, string? assigneeUsername);
         void DeleteProject(string title);
     }
 }

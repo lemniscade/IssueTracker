@@ -11,17 +11,16 @@ namespace IssueTracker.Business.Services
 {
     public class JsonExport
     {
-        public async Task ExportIssuesToJsonAsync(string filePath)
+        public async Task ExportIssuesToJsonAsync<T>(string filePath, List<T> listToExport) where T : class
         {
             using var dbContext = new ApplicationDbContext();
-            var issues = await dbContext.Issues.ToListAsync();
 
             var jsonOptions = new JsonSerializerOptions
             {
                 WriteIndented = true
             };
 
-            string jsonString = JsonSerializer.Serialize(issues, jsonOptions);
+            string jsonString = JsonSerializer.Serialize(listToExport, jsonOptions);
             await File.WriteAllTextAsync(filePath, jsonString);
         }
     }

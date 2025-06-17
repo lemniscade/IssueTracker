@@ -13,7 +13,7 @@ namespace IssueTracker.Business.Validations
             RuleFor(user => user.Password)
                 .NotEmpty().WithMessage("Password is required.")
                 .Length(6, 50).WithMessage("Password must be between 6 and 50 characters.")
-                .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$")
+                .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{3,}$")
                 .WithMessage("Password must contain at least one uppercase letter, one lowercase letter, and one number.");
         }
     }

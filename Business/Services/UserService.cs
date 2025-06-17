@@ -23,9 +23,10 @@ namespace IssueTracker.Business.Services
         }
         public bool Login(string username, string password)
         {
+
             bool isUserExist = _userRepository.IsUserExist(username, password);
             if (isUserExist) {
-                UserRepository user = new UserRepository();
+                UserRepository user = new UserRepository(_validator);
                 this.usernameOfExistUser = user.user.Username;
                 return true;
             }
@@ -34,7 +35,20 @@ namespace IssueTracker.Business.Services
 
         public bool Register(string username, string password)
         {
+     
             return _userRepository.Create(username, password);
         }
+
+        public bool Update(string oldUsername, string newUsername, string password)
+        {   
+            bool isUserExist = Login(oldUsername, password);
+            if(isUserExist)
+            {
+                return _userRepository.Update(oldUsername, newUsername, password);
+            }
+            return false;
+            
+        }
+
     }
 }

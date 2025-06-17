@@ -1,4 +1,5 @@
-﻿using IssueTracker.Entity;
+﻿using IssueTracker.Business.UI;
+using IssueTracker.Entity;
 using IssueTracker.Entity.Models;
 using System;
 using System.Collections.Generic;
@@ -10,8 +11,10 @@ namespace IssueTracker.DataAccess.Repositories
 {
     public class ProjectRepository:IProjectRepository
     {
-        public bool Create(string title, string description, string assigneeUsername, string createdUsername)
+        ConsoleUI consoleUI = new ConsoleUI();
+        public bool Create(string title, string description, string assigneeUsername)
         {
+            string username = consoleUI.getCurrentUser();
             using (var context = new ApplicationDbContext())
             {
                 Project project = new Project
@@ -19,7 +22,7 @@ namespace IssueTracker.DataAccess.Repositories
                     Title = title,
                     Description = description,
                     Assignee = context.Users.FirstOrDefault(u => u.Username == assigneeUsername),
-                    CreatedBy = context.Users.FirstOrDefault(u => u.Username == createdUsername)
+                    CreatedBy = context.Users.FirstOrDefault(u => u.Username == username)
                 };
                 context.Projects.Add(project);
                 return context.SaveChanges() > 0;
@@ -27,12 +30,13 @@ namespace IssueTracker.DataAccess.Repositories
         }
         public bool Update(string findingTitle,string? title, string? description, string? assigneeUsername)
         {
+            string username = consoleUI.getCurrentUser();
             using (var context = new ApplicationDbContext()) {
                 Project project = context.Projects.FirstOrDefault(p => p.Title == findingTitle);
                 project.Title = title ?? project.Title;
                 project.Description = description ?? project.Description;
                 project.Assignee = assigneeUsername != null ? context.Users.FirstOrDefault(u => u.Username == assigneeUsername) : project.Assignee;
-                //project.ChangedBy =  sistemden alınacak todo
+                project.ChangedBy = context.Users.FirstOrDefault(u => u.Username == username);
                 project.ChangedAt = DateTime.Now;
                 return context.SaveChanges() > 0;
             }
