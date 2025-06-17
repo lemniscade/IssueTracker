@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using IssueTracker.Business.Exceptions;
+using IssueTracker.Business.Logging;
 using IssueTracker.Entity;
 using IssueTracker.Entity.Models;
 using Org.BouncyCastle.Crypto.Generators;
@@ -20,11 +21,13 @@ namespace IssueTracker.DataAccess.Repositories
     {
         public User user;
         private readonly IValidator<User> _validator;
+        private ExceptionLogging _logging;
         public UserRepository(IValidator<User> validator)
         {
             _validator = validator;
+            _logging = new ExceptionLogging();
         }
-        public void ValidateUser(User user)
+        public bool ValidateUser(User user)
         {
             var validationResult = _validator.Validate(user);
             if (!validationResult.IsValid)
@@ -34,6 +37,7 @@ namespace IssueTracker.DataAccess.Repositories
                     Console.WriteLine($"Hata: {error.ErrorMessage}");
                 }
             }
+            return false;
         }
         public bool Create(string username, string password)
         {
@@ -44,7 +48,18 @@ namespace IssueTracker.DataAccess.Repositories
                         Username = username,
                         Password = password
                     };
-                    ValidateUser(user);
+                if(IsUserExist(username, password))
+                {
+                    Console.WriteLine("User register operation failed, there is a user with same username.");
+                    this._logging.Create("User register operation failed, there is a user with same username.", new Dictionary<string, object> { { "Attempted username", username } });
+                    return false;
+                }
+                if (ValidateUser(user))
+                {
+                    Console.WriteLine("Validation failed. User not created.");
+                    this._logging.Create("Validation failed. User not created.", new Dictionary<string, object> { { "Attempted username", username } });
+                    return false;
+                }
                     user.Password = HashPassword(password);
                     context.Users.Add(user);
                     return context.SaveChanges() > 0;
@@ -89,7 +104,7 @@ namespace IssueTracker.DataAccess.Repositories
             string passwordHash = HashPassword(password);
             using (var context = new ApplicationDbContext())
             {
-                User user = context.Users.FirstOrDefault(u => u.Username == username && u.Password == passwordHash && u.IsActive!=false);
+                User user = context.Users.FirstOrDefault(u => u.Username == username && u.IsActive==true);
                 this.user = user;
                 if (user != null)
                 {
