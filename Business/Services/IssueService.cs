@@ -22,9 +22,9 @@ namespace IssueTracker.Business.Services
             _issueRepository = issueRepository;
         }
 
-        public void CreateIssue(string title, string description, int type, int statusId, int priority, string assigneeUsername, string createdUsername, int effort, string projectTitle)
+        public void CreateIssue(string title, string description, int type, int statusId, int priority, string assigneeUsername, string createdUsername, int effort, string projectTitle,UserService userService)
         {
-            _issueRepository.Create(title, description, type, statusId, priority, assigneeUsername, createdUsername, effort, projectTitle);
+            _issueRepository.Create(title, description, type, statusId, priority, assigneeUsername, createdUsername, effort, projectTitle, userService);
         }
         public void DeleteIssue(string title)
         {

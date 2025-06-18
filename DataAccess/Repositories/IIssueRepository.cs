@@ -1,4 +1,5 @@
-﻿using IssueTracker.DataAccess.Dtos;
+﻿using IssueTracker.Business.Services;
+using IssueTracker.DataAccess.Dtos;
 using IssueTracker.Entity.Models;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace IssueTracker.DataAccess.Repositories
 {
     public interface IIssueRepository
     {
-        bool Create(string title, string description, int type, int statusId, int priority, string assigneeUsername, string createdUsername, int effort, string projectTitle);
+        bool Create(string title, string description, int type, int statusId, int priority, string assigneeUsername, string createdUsername, int effort, string projectTitle, UserService userService);
         bool Update(string findingTitle, string? title, string? description, int? type, int? statusId, int? priority, string? assigneeUsername, string? updatedUsername, int? effort, string? projectTitle);
         bool Delete(string title);
         List<Issue> GetAll(List<Issue> issues,string? username, string? title, int? type, bool? ascending,int? priority,int? status);

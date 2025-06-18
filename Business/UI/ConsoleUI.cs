@@ -183,7 +183,7 @@ namespace IssueTracker.Business.UI
                                     }
                                     break;
                                 case "3. Create Issue":
-                                    if (string.IsNullOrEmpty(this.existUser.Username))
+                                    if (!string.IsNullOrEmpty(this.existUser.Username))
                                     {
                                         issueTitle = AnsiConsole.Ask<string>("Enter the title of issue:");
                                         issueDescription = AnsiConsole.Ask<string>("Enter the description of issue:");
@@ -269,7 +269,7 @@ namespace IssueTracker.Business.UI
                                         project = AnsiConsole.Ask<string>("Enter the name of project to connect:");
 
                                         effort = AnsiConsole.Ask<int>("Enter the effort of issue as hour:");
-                                        issueService.CreateIssue(issueTitle, issueDescription, (int)type, (int)statusId, (int)priorityId, assignee, existUser.Username, (int)effort, project);
+                                        issueService.CreateIssue(issueTitle, issueDescription, (int)type, (int)statusId, (int)priorityId, assignee, existUser.Username, (int)effort, project,userService);
 
                                     }
                                     else
@@ -278,7 +278,7 @@ namespace IssueTracker.Business.UI
                                     }
                                     break;
                                 case "4. Edit Issue":
-                                    if (string.IsNullOrEmpty(this.existUser.Username))
+                                    if (!string.IsNullOrEmpty(this.existUser.Username))
                                     {
                                         findingTitle = AnsiConsole.Ask<string>("Enter the issue title to change:");
 
@@ -288,7 +288,7 @@ namespace IssueTracker.Business.UI
                                             .PageSize(8)
                                             .AddChoices(new[] {
                         "1. Edit Title",
-                        "2. Edit Descrption",
+                        "2. Edit Description",
                         "3. Edit Type",
                         "4. Edit Status",
                         "5. Edit Priority",
@@ -412,7 +412,7 @@ namespace IssueTracker.Business.UI
                                                     effort = 0;
                                                 break;
                                         }
-                                        issueService.UpdateIssue(findingTitle, issueTitle, issueDescription, type, (int)statusId, (int)priorityId, assignee, existUser.Username, effort, project);
+                                        issueService.UpdateIssue(findingTitle, issueTitle, issueDescription, type, statusId, priorityId, assignee, existUser.Username, effort, project);
                                     }
                                     else
                                     {
@@ -420,7 +420,7 @@ namespace IssueTracker.Business.UI
                                     }
                                     break;
                                 case "5. Delete Issue":
-                                    if (string.IsNullOrEmpty(this.existUser.Username))
+                                    if (!string.IsNullOrEmpty(this.existUser.Username))
                                     {
                                         findingTitle = AnsiConsole.Ask<string>("Enter the title of issue to delete:");
                                         issueService.DeleteIssue(findingTitle);
@@ -431,7 +431,7 @@ namespace IssueTracker.Business.UI
                                     }
                                     break;
                                 case "6. Delete Project":
-                                    if (string.IsNullOrEmpty(this.existUser.Username))
+                                    if (!string.IsNullOrEmpty(this.existUser.Username))
                                     {
                                         projectTitle = AnsiConsole.Ask<string>("Enter the title of project to delete:");
                                         projectService.DeleteProject(projectTitle);
@@ -442,7 +442,7 @@ namespace IssueTracker.Business.UI
                                     }
                                     break;
                                 case "7. List Projects":
-                                    if (string.IsNullOrEmpty(this.existUser.Username))
+                                    if (!string.IsNullOrEmpty(this.existUser.Username))
                                     {
                                         projectTitle = AnsiConsole.Ask<string>("Enter the title of project to search:");
                                         List<Project> projects = (List<Project>)projectService.GetAllProjects(this.existUser.Username, projectTitle);
@@ -466,7 +466,7 @@ namespace IssueTracker.Business.UI
                                     break;
                                 case "8. List Issues":
                                     List<Issue> issues = new List<Issue>();
-                                    if (string.IsNullOrEmpty(this.existUser.Username))
+                                    if (!string.IsNullOrEmpty(this.existUser.Username))
                                     {
                                         string choose = AnsiConsole.Prompt(
                                                     new SelectionPrompt<string>()

@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using IssueTracker.Business.Exceptions;
 using IssueTracker.Business.Logging;
+using IssueTracker.Business.Services;
 using IssueTracker.Business.Validations;
 using IssueTracker.Entity;
 using IssueTracker.Entity.Models;
@@ -15,8 +16,8 @@ namespace IssueTracker.DataAccess.Repositories
 {
     public class IssueRepository : IIssueRepository
     {
-        private readonly IValidator<Issue> _validator;
-        public bool Create(string title, string description, int type, int statusId, int priority, string assigneeUsername, string createdUsername, int effort, string projectTitle)
+        private IssueValidator _validator=new IssueValidator();
+        public bool Create(string title, string description, int type, int statusId, int priority, string assigneeUsername, string createdUsername, int effort, string projectTitle,UserService userService)
         {
             try
             {
@@ -33,7 +34,9 @@ namespace IssueTracker.DataAccess.Repositories
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now,
                         AssignedAt = DateTime.Now,
+                        Assignee = context.Users.FirstOrDefault(u => u.Username == assigneeUsername) ?? throw new ArgumentException("Assignee not found", nameof(assigneeUsername)),
                         Project = context.Projects.FirstOrDefault(p => p.Title == projectTitle) ?? throw new ArgumentException("Project not found", nameof(projectTitle)),
+                        CreatedBy = context.Users.FirstOrDefault(u => u.Username == userService.existUser.Username) ?? throw new ArgumentException("Creator not found", nameof(createdUsername))
                     };
                     var validationResult = _validator.Validate(issue);
 
@@ -44,6 +47,7 @@ namespace IssueTracker.DataAccess.Repositories
                     bool exists = context.Issues.Any(i => i.Title == title);
                     if (exists)
                         throw new BusinessException("An issue with the same title already exists.");
+                    context.Issues.Add(issue);
                     return context.SaveChanges() > 0;
 
                 }
@@ -72,7 +76,7 @@ namespace IssueTracker.DataAccess.Repositories
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    Issue issue = context.Issues.FirstOrDefault(i => i.Title == findingTitle) ?? throw new ArgumentException("Issue not found", nameof(findingTitle));
+                    Issue issue = context.Issues.FirstOrDefault(i => i.Title == findingTitle);
                     if (issue != null)
                     {
                         if (title != null) issue.Title = title;
@@ -80,16 +84,16 @@ namespace IssueTracker.DataAccess.Repositories
                         if (type != null) issue.TypeEnumId = (int)type;
                         if (statusId != null) issue.StatusEnumId = statusId.Value;
                         if (priority != null) issue.PriorityEnumId = priority.Value;
-                        if (assigneeUsername != null || assigneeUsername != "") issue.Assignee = context.Users.FirstOrDefault(u => u.Username == assigneeUsername) ?? throw new ArgumentException("Assignee not found", nameof(assigneeUsername));
+                        if (assigneeUsername != null || assigneeUsername != "") issue.Assignee = context.Users.FirstOrDefault(u => u.Username == assigneeUsername);
                         if (updatedUsername != null || updatedUsername != "")
                         {
-                            issue.ChangedBy = context.Users.FirstOrDefault(u => u.Username == updatedUsername) ?? throw new ArgumentException("Updater not found", nameof(updatedUsername));
+                            issue.ChangedBy = context.Users.FirstOrDefault(u => u.Username == updatedUsername);
                             issue.UpdatedAt = DateTime.Now;
                         }
                         if (effort != null) issue.Effort = effort.Value;
                         if (projectTitle != null || projectTitle != "")
                         {
-                            issue.Project = context.Projects.FirstOrDefault(p => p.Title == projectTitle) ?? throw new ArgumentException("Project not found", nameof(projectTitle));
+                            issue.Project = context.Projects.FirstOrDefault(p => p.Title == projectTitle);
                         }
                     }
 
