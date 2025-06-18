@@ -12,7 +12,8 @@ namespace IssueTracker.DataAccess.Repositories
         bool Create(string username, string password);
         bool Update(string oldUsername, string? newUsername, string? password);
         bool Delete(string username);
-
         bool IsUserExist(string username,string password);
+
+        bool IsAdmin(string username, string password);
     }
 }

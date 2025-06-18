@@ -31,9 +31,9 @@ namespace IssueTracker.Business.Services
             _issueRepository.Delete(title);
         }
 
-        public IEnumerable<Issue> GetAllIssues(string username,string title)
+        public List<Issue> GetAllIssues(List<Issue>  listToReturn,string username, string title, int? type, bool? ascending,int? priority,int? status)
         {
-            List<Issue> issueList=_issueRepository.GetAll(username, title);
+            List<Issue> issueList=_issueRepository.GetAll(listToReturn, username, title,type,ascending,priority,status);
             if(issueList.Count == 0)
             {
                 throw new BusinessException("There is no issue for this operation");

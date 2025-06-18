@@ -78,15 +78,15 @@ namespace IssueTracker.DataAccess.Repositories
                         if (title != null) issue.Title = title;
                         if (description != null) issue.Description = description;
                         if (type != null) issue.TypeEnumId = (int)type;
-                        if (statusId!=null) issue.StatusEnumId = statusId.Value;
-                        if (priority!=null) issue.PriorityEnumId = priority.Value;
+                        if (statusId != null) issue.StatusEnumId = statusId.Value;
+                        if (priority != null) issue.PriorityEnumId = priority.Value;
                         if (assigneeUsername != null || assigneeUsername != "") issue.Assignee = context.Users.FirstOrDefault(u => u.Username == assigneeUsername) ?? throw new ArgumentException("Assignee not found", nameof(assigneeUsername));
                         if (updatedUsername != null || updatedUsername != "")
                         {
                             issue.ChangedBy = context.Users.FirstOrDefault(u => u.Username == updatedUsername) ?? throw new ArgumentException("Updater not found", nameof(updatedUsername));
                             issue.UpdatedAt = DateTime.Now;
                         }
-                        if (effort!=null) issue.Effort = effort.Value;
+                        if (effort != null) issue.Effort = effort.Value;
                         if (projectTitle != null || projectTitle != "")
                         {
                             issue.Project = context.Projects.FirstOrDefault(p => p.Title == projectTitle) ?? throw new ArgumentException("Project not found", nameof(projectTitle));
@@ -160,46 +160,56 @@ namespace IssueTracker.DataAccess.Repositories
             }
         }
 
-        public List<Issue> GetAll(string? username, string? title)
+        public List<Issue> GetAll(List<Issue> issueList,string? username, string? title, int? type, bool? ascending,int? priority, int? status)
         {
-            using (var context = new ApplicationDbContext())
+            List<Issue> issues;
+            if (issueList.Count == 0)
             {
-                if (string.IsNullOrEmpty(username) && string.IsNullOrEmpty(title))
-                {
-                    return context.Issues.ToList();
-                }
-                if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(title))
-                {
-                    return context.Issues.Where(i => i.CreatedBy.Username == username || i.Assignee.Username == username && i.Title == title).ToList();
-                }
-                if (string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(title))
-                {
-                    return context.Issues.Where(i => i.Title == title).ToList();
-                }
-                if (!string.IsNullOrEmpty(username) && string.IsNullOrEmpty(title))
-                {
-                    return context.Issues.Where(i => i.CreatedBy.Username == username || i.Assignee.Username == username).ToList();
-                }
-                
-                return new List<Issue>();
+                issues = new List<Issue>();
             }
-        }
-
-        public List<Issue> GetByFilter(int type, bool? ascending)
-        {
-            using (var context = new ApplicationDbContext())
+            else
             {
-                var query = context.Issues.AsQueryable();
-                if (type == 1 || type == 2)
-                {
-                    query = query.Where(i => i.TypeEnumId == type);
-                }
-                if (ascending.HasValue)
-                {
-                    query = ascending.Value ? query.OrderBy(i => i.PriorityEnumId) : query.OrderByDescending(i => i.PriorityEnumId);
-                }
-                return query.ToList();
+                issues = issueList;
             }
+                using (var context = new ApplicationDbContext())
+                {
+                    if (string.IsNullOrEmpty(username) && string.IsNullOrEmpty(title))
+                    {
+                        issues = context.Issues.ToList();
+                    }
+                    if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(title))
+                    {
+                        issues = issues.Where(i => i.CreatedBy.Username == username || i.Assignee.Username == username && i.Title == title).ToList();
+                    }
+                    if (string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(title))
+                    {
+                        issues = issues.Where(i => i.Title == title).ToList();
+                    }
+                    if (!string.IsNullOrEmpty(username) && string.IsNullOrEmpty(title))
+                    {
+                        issues = issues.Where(i => i.CreatedBy.Username == username || i.Assignee.Username == username).ToList();
+                    }
+                    if (type.HasValue)
+                    {
+                        issues = issues.Where(i => i.TypeEnumId == type.Value).ToList();
+                    }
+                    if (status.HasValue)
+                    {
+                        issues = issues.Where(i => i.StatusEnumId == status.Value).ToList();
+                    }
+                    if (ascending.HasValue)
+                    {
+                        if (ascending.Value)
+                        {
+                            issues.OrderBy(i => i.PriorityEnumId).ToList();
+                        }
+                        else
+                        {
+                            issues.OrderByDescending(i => i.PriorityEnumId).ToList();
+                        }
+                    }
+                    return issues;
+                }
         }
     }
 }

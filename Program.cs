@@ -8,7 +8,6 @@ namespace IssueTracker
         {
             ConsoleUI consoleUI = new ConsoleUI();
             consoleUI.Execute();
-            Console.WriteLine("Hello, World!");
         }
     }
 }

@@ -92,7 +92,6 @@ namespace IssueTracker.DataAccess.Repositories
                 var user = context.Users.FirstOrDefault(u => u.Username == username);
                 if (user != null)
                 {
-                    user.IsActive=false;
                     return context.SaveChanges() > 0;
                 }
                 return false;
@@ -104,7 +103,7 @@ namespace IssueTracker.DataAccess.Repositories
             string passwordHash = HashPassword(password);
             using (var context = new ApplicationDbContext())
             {
-                User user = context.Users.FirstOrDefault(u => u.Username == username && u.IsActive==true);
+                User user = context.Users.FirstOrDefault(u => u.Username == username);
                 this.user = user;
                 if (user != null)
                 {
@@ -116,7 +115,34 @@ namespace IssueTracker.DataAccess.Repositories
                 }
             }
         }
+        public User existUser(string username)
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                User user = context.Users.FirstOrDefault(u => u.Username == username);
+                if (user != null)
+                {
+                    return user;
+                }
+            }
+            return null;
+        }
 
+        public bool IsAdmin(string username,string password)
+        {
+                using (var context = new ApplicationDbContext())
+                {
+                    User user = context.Users.FirstOrDefault(u => u.Username == username && u.Password == HashPassword(password));
+                    if (user != null && user.Username=="VeriPark")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }          
+        }
         private string HashPassword(string password)
         {
             using (var deriveBytes = new Rfc2898DeriveBytes(password, 16, 10000))

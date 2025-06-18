@@ -1,4 +1,5 @@
-﻿using IssueTracker.Entity.Models;
+﻿using IssueTracker.Business.Services;
+using IssueTracker.Entity.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,8 @@ namespace IssueTracker.DataAccess.Repositories
 {
     public interface IProjectRepository
     {
-        bool Create(string title, string description, string assigneeUsername);
-        bool Update(string findingTitle, string? title, string? description, string? assigneeUsername);
+        bool Create(string title, string description, string assigneeUsername, UserService userService);
+        bool Update(string findingTitle, string? title, string? description, string? assigneeUsername, UserService userService);
         bool Delete(string title);
         //public List<Issue> GetCreated(string title, string username);
         //public List<Issue> GetAssigned(string title, string username);

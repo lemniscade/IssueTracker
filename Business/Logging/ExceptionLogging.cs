@@ -10,18 +10,24 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Reflection;
+using IssueTracker.Business.Services;
+using FluentValidation;
+using IssueTracker.DataAccess.Repositories;
 
 namespace IssueTracker.Business.Logging
 {
     public class ExceptionLogging
     {
+        private readonly IValidator<User> _validator;
+        private readonly IUserRepository _userRepository;
+        UserService userService;
         public ExceptionLogging()
         {
-
+            userService = new UserService(_validator, _userRepository);
         }
         public string LogManualError(string message, Dictionary<string, object> context)
         {
-            string user = Environment.UserName;
+            string user = userService.existUser.Username;
             string timestamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
             var stackTraceObj = new StackTrace(true);
             string stackTrace = stackTraceObj.ToString();

@@ -13,7 +13,7 @@ namespace IssueTracker.Business.Services
 {
     public class UserService : IUserService
     {
-        public string usernameOfExistUser;
+        public User existUser;
         private readonly IValidator<User> _validator;
         private readonly IUserRepository _userRepository;
         public UserService(IValidator<User> validator, IUserRepository userRepository)
@@ -28,7 +28,7 @@ namespace IssueTracker.Business.Services
             if (isUserExist)
             {
                 UserRepository user = new UserRepository(_validator);
-                this.usernameOfExistUser = user.user.Username;
+                this.existUser = user.existUser(username);
                 return true;
             }
             return false;
@@ -59,6 +59,11 @@ namespace IssueTracker.Business.Services
                 return _userRepository.Delete(username);
             }
             return false;
+        }
+
+        public bool IsAdmin(string username,string password)
+        {
+            return _userRepository.IsAdmin(username, password);
         }
     }
 }

@@ -18,9 +18,9 @@ namespace IssueTracker.Business.Services
             _validator = validator;
             _projectRepository = projectRepository;
         }
-        public void CreateProject(string title, string description, string assigneeUsername)
+        public void CreateProject(string title, string description, string assigneeUsername, UserService userService)
         {
-            _projectRepository.Create(title, description, assigneeUsername);
+            _projectRepository.Create(title, description, assigneeUsername,userService);
         }
 
         public void DeleteProject(string title)
@@ -36,9 +36,9 @@ namespace IssueTracker.Business.Services
 
         }
 
-        public void UpdateProject(string findingTitle, string? title, string? description, string? assigneeUsername)
+        public void UpdateProject(string findingTitle, string? title, string? description, string? assigneeUsername,UserService userService)
         {
-            _projectRepository.Update(findingTitle, title, description, assigneeUsername);
+            _projectRepository.Update(findingTitle, title, description, assigneeUsername,userService);
         }
     }
 }

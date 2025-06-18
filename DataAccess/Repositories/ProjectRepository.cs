@@ -14,15 +14,15 @@ namespace IssueTracker.DataAccess.Repositories
 {
     public class ProjectRepository:IProjectRepository
     {
-        private string usernameOfExistUser;
+        private User existUser;
         IValidator<User> validatorForUser = new UserValidator();
-        public ProjectRepository()
+        public ProjectRepository(UserService userService)
         {
-            IUserRepository userRepository = new UserRepository(validatorForUser);
-            UserService userService = new UserService(validatorForUser, userRepository);
-            this.usernameOfExistUser = userService.usernameOfExistUser;
+            //    IUserRepository userRepository = new UserRepository(validatorForUser);
+            //    UserService userService = new UserService(validatorForUser, userRepository);
+            //this.existUser = userService.existUser;
         }
-        public bool Create(string title, string description, string assigneeUsername)
+        public bool Create(string title, string description, string assigneeUsername, UserService userService)
         {
             using (var context = new ApplicationDbContext())
             {
@@ -31,20 +31,23 @@ namespace IssueTracker.DataAccess.Repositories
                     Title = title,
                     Description = description,
                     Assignee = context.Users.FirstOrDefault(u => u.Username == assigneeUsername),
-                    CreatedBy = context.Users.FirstOrDefault(u => u.Username == usernameOfExistUser)
+                    CreatedBy = context.Users.FirstOrDefault(u => u.Username == userService.existUser.Username),
+                    CreatedAt = DateTime.Now,
+                    AssignedAt = DateTime.Now,
                 };
                 context.Projects.Add(project);
                 return context.SaveChanges() > 0;
             }
         }
-        public bool Update(string findingTitle,string? title, string? description, string? assigneeUsername)
+        public bool Update(string findingTitle,string? title, string? description, string? assigneeUsername,UserService userService)
         {
             using (var context = new ApplicationDbContext()) {
                 Project project = context.Projects.FirstOrDefault(p => p.Title == findingTitle);
                 project.Title = title ?? project.Title;
                 project.Description = description ?? project.Description;
-                project.Assignee = assigneeUsername != null ? context.Users.FirstOrDefault(u => u.Username == assigneeUsername) : project.Assignee;
-                project.ChangedBy = context.Users.FirstOrDefault(u => u.Username == usernameOfExistUser);
+                project.Assignee = assigneeUsername != null ? context.Users.FirstOrDefault(u => u.Username == assigneeUsername) : project.Assignee ;
+                if(assigneeUsername != null) project.AssignedAt = DateTime.Now;
+                project.ChangedBy = context.Users.FirstOrDefault(u => u.Username == userService.existUser.Username);
                 project.ChangedAt = DateTime.Now;
                 return context.SaveChanges() > 0;
             }
