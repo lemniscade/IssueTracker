@@ -21,15 +21,11 @@ namespace IssueTracker.Business.Validations
                 .Length(10, 500).WithMessage("Description must be between 10 and 500 characters.");
             RuleFor(issue => issue.Effort)
                 .GreaterThan(0).WithMessage("Effort must be a bigger than zero.");
-            RuleFor(issue => issue.Assignee)
-                .NotNull().WithMessage("Assignee is required.");
-                //.ChildRules(child =>
-                //{
-                //    child.RuleFor(assignee => assignee.Username)
-                //        .NotEmpty().WithMessage("Assignee username is required.").Length(3,20);
-                //});
+            RuleFor(issue => issue.IssueUsers)
+            .NotNull().NotEmpty().Must(iu => iu.Any(x => x.UserTypeEnumId == 3))
+            .WithMessage("At least one Assigned user is required.");
             RuleFor(issue => issue.Effort).NotEmpty().WithMessage("Effort is required.")
-                .GreaterThanOrEqualTo(0).WithMessage("Effort must be a non-negative integer.");
+                .GreaterThanOrEqualTo(0).LessThan(60).WithMessage("Effort must be betwwen 0 and 60 hours.");
 
 
         }

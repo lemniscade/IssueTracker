@@ -3,6 +3,7 @@ using IssueTracker.Business.Exceptions;
 using IssueTracker.Business.Logging;
 using IssueTracker.Entity;
 using IssueTracker.Entity.Models;
+using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
@@ -43,7 +44,13 @@ namespace IssueTracker.DataAccess.Repositories
         {
                 using (var context = new ApplicationDbContext())
                 {
-                    var user = new User
+                User previosuUser = context.Users.FirstOrDefault(u => u.Username == username);
+                if(previosuUser != null)
+                {
+                    Console.WriteLine("User already exists.");
+                    return false;
+                }
+                var user = new User
                     {
                         Username = username,
                         Password = password
@@ -67,23 +74,19 @@ namespace IssueTracker.DataAccess.Repositories
             }
         public bool Update(string oldUsername, string newUsername, string password)
         {
-                try
-                {
-                    using (var context = new ApplicationDbContext())
+            using (var context = new ApplicationDbContext())
                     {
                         var user = context.Users.FirstOrDefault(u => u.Username == oldUsername);
+                    if (user == null)
+                    {
+                        Console.WriteLine("User can't find. Please repeat again with different username.");
+                    }
                             user.Username = newUsername;
                             user.Password = password;
                         ValidateUser(user);
                         user.Password = HashPassword(password);
                         return context.SaveChanges() > 0;
                     }
-                }
-                catch (BusinessException ex)
-                {
-                    Console.WriteLine("Kullanıcı bulunamadı. Lütfen tekrar deneyin.");
-                    return false;
-                }
             }
         public bool Delete(string username)
         {
@@ -92,28 +95,36 @@ namespace IssueTracker.DataAccess.Repositories
                 var user = context.Users.FirstOrDefault(u => u.Username == username);
                 if (user != null)
                 {
+                    context.Users.Remove(user);
                     return context.SaveChanges() > 0;
                 }
                 return false;
             }
         }
 
-        public bool IsUserExist(string username, string password)
+        public bool IsUserExist(string username, string? password)
         {
-            string passwordHash = HashPassword(password);
+            
+            User existUser = new User();
             using (var context = new ApplicationDbContext())
             {
-                User user = context.Users.FirstOrDefault(u => u.Username == username);
-                this.user = user;
-                if (user != null)
+                if (string.IsNullOrEmpty(password))
                 {
-                    return true;
+                    existUser = context.Users.FirstOrDefault(u => u.Username == username);
+                } else {
+                    string passwordHash = HashPassword(password);
+                    existUser = context.Users.FirstOrDefault(u => u.Username == username && u.Password == passwordHash);
                 }
-                else
-                {
-                    return false;
+
+                if (existUser != null)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
-            }
         }
         public User existUser(string username)
         {
@@ -145,11 +156,15 @@ namespace IssueTracker.DataAccess.Repositories
         }
         private string HashPassword(string password)
         {
-            using (var deriveBytes = new Rfc2898DeriveBytes(password, 16, 10000))
+            using (SHA256 sha256Hash = SHA256.Create())
             {
-                var salt = deriveBytes.Salt;
-                var hash = deriveBytes.GetBytes(32);
-                return Convert.ToBase64String(hash);
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+                StringBuilder builder = new StringBuilder();
+                foreach (var t in bytes)
+                    builder.Append(t.ToString("x2"));
+
+                return builder.ToString();
             }
         }
 

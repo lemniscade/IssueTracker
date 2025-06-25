@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IssueTracker.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250615175520_Fourth")]
-    partial class Fourth
+    [Migration("20250619084720_Second")]
+    partial class Second
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -68,9 +68,8 @@ namespace IssueTracker.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("TypeEnumId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -114,19 +113,7 @@ namespace IssueTracker.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("InnerException")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Source")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StackTrace")
+                    b.Property<string>("JsonLog")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -143,44 +130,34 @@ namespace IssueTracker.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("AssigneeId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("ChangedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("ChangedById")
+                    b.Property<int?>("ChangedUserId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CreatedById")
+                    b.Property<int>("CreatedUserId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssigneeId");
+                    b.HasIndex("ChangedUserId");
 
-                    b.HasIndex("ChangedById");
-
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("CreatedUserId");
 
                     b.HasIndex("UserId");
 
@@ -201,8 +178,7 @@ namespace IssueTracker.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -257,28 +233,20 @@ namespace IssueTracker.Migrations
 
             modelBuilder.Entity("IssueTracker.Entity.Models.Project", b =>
                 {
-                    b.HasOne("IssueTracker.Entity.Models.User", "Assignee")
-                        .WithMany()
-                        .HasForeignKey("AssigneeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("IssueTracker.Entity.Models.User", "ChangedBy")
                         .WithMany()
-                        .HasForeignKey("ChangedById")
+                        .HasForeignKey("ChangedUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("IssueTracker.Entity.Models.User", "CreatedBy")
                         .WithMany()
-                        .HasForeignKey("CreatedById")
+                        .HasForeignKey("CreatedUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("IssueTracker.Entity.Models.User", null)
                         .WithMany("OwnedProjects")
                         .HasForeignKey("UserId");
-
-                    b.Navigation("Assignee");
 
                     b.Navigation("ChangedBy");
 

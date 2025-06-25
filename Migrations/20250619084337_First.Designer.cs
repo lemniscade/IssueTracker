@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IssueTracker.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250617053336_Fifth")]
-    partial class Fifth
+    [Migration("20250619084337_First")]
+    partial class First
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -113,19 +113,7 @@ namespace IssueTracker.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("InnerException")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Source")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StackTrace")
+                    b.Property<string>("JsonLog")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -142,16 +130,13 @@ namespace IssueTracker.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("AssigneeId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("ChangedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("ChangedById")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ChangedUserId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -160,22 +145,21 @@ namespace IssueTracker.Migrations
                     b.Property<int>("CreatedById")
                         .HasColumnType("int");
 
+                    b.Property<int>("CreatedUserId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AssigneeId");
 
                     b.HasIndex("ChangedById");
 
@@ -194,17 +178,13 @@ namespace IssueTracker.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -259,12 +239,6 @@ namespace IssueTracker.Migrations
 
             modelBuilder.Entity("IssueTracker.Entity.Models.Project", b =>
                 {
-                    b.HasOne("IssueTracker.Entity.Models.User", "Assignee")
-                        .WithMany()
-                        .HasForeignKey("AssigneeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("IssueTracker.Entity.Models.User", "ChangedBy")
                         .WithMany()
                         .HasForeignKey("ChangedById")
@@ -279,8 +253,6 @@ namespace IssueTracker.Migrations
                     b.HasOne("IssueTracker.Entity.Models.User", null)
                         .WithMany("OwnedProjects")
                         .HasForeignKey("UserId");
-
-                    b.Navigation("Assignee");
 
                     b.Navigation("ChangedBy");
 

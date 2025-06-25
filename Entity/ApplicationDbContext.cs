@@ -22,6 +22,8 @@ namespace IssueTracker.Entity
 
         public DbSet<User> Users => Set<User>();
         public DbSet<Log> Logs => Set<Log>();
+        public DbSet<IssueUser> IssueUsers => Set<IssueUser>();
+        public DbSet<ProjectUser> ProjectUsers => Set<ProjectUser>();
         private readonly IConfiguration _configuration;
 
         public ApplicationDbContext()
@@ -44,88 +46,82 @@ namespace IssueTracker.Entity
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            //base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Project>()
-                .Property(p => p.Id);
+            //modelBuilder.Entity<Project>()
+            //    .Property(p => p.Id);
 
-            modelBuilder.Entity<Project>()
-                .HasKey(p => p.Id);
+            //modelBuilder.Entity<Project>()
+            //    .HasKey(p => p.Id);
 
-            modelBuilder.Entity<User>()
-                .Property(p => p.Id);
+            //modelBuilder.Entity<User>()
+            //    .Property(p => p.Id);
 
-            modelBuilder.Entity<User>()
-                .HasKey(p => p.Id);
+            //modelBuilder.Entity<User>()
+            //    .HasKey(p => p.Id);
 
-            modelBuilder.Entity<Issue>()
-                .Property(i => i.Id);
+            //modelBuilder.Entity<Issue>()
+            //    .Property(i => i.Id);
 
-            modelBuilder.Entity<Issue>()
-                .HasKey(i => i.Id);
+            //modelBuilder.Entity<Issue>()
+            //    .HasKey(i => i.Id);
 
-            modelBuilder.Entity<Issue>()
-                .Property(i => i.ProjectId);
+            //modelBuilder.Entity<Issue>()
+            //    .Property(i => i.ProjectId);
 
-            modelBuilder.Entity<Issue>()
-                .HasOne(i => i.Project)
-                .WithMany(p => p.Issues)
-                .HasForeignKey(i => i.ProjectId)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<Issue>()
+            //    .HasOne(i => i.Project)
+            //    .WithMany(p => p.Issues)
+            //    .HasForeignKey(i => i.ProjectId)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Issue>()
-                .HasOne(i => i.CreatedBy)
-                .WithMany()
-                .HasForeignKey(i => i.CreatedById)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<Issue>()
+            //    .HasOne(i => i.CreatedBy)
+            //    .WithMany()
+            //    .HasForeignKey(i => i.CreatedById)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Issue>()
-                .HasOne(i => i.Assignee)
-                .WithMany()
-                .HasForeignKey(i => i.AssigneeId)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<Issue>()
+            //    .HasOne(i => i.Assignee)
+            //    .WithMany()
+            //    .HasForeignKey(i => i.AssigneeId)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Issue>()
-                .HasOne(i => i.ChangedBy)
-                .WithMany()
-                .HasForeignKey(i => i.ChangedById)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<Issue>()
+            //    .HasOne(i => i.ChangedBy)
+            //    .WithMany()
+            //    .HasForeignKey(i => i.ChangedById)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Issue>()
-            .HasOne(i => i.CreatedBy)
-            .WithMany()
-            .HasForeignKey(i => i.CreatedById)
-            .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<Issue>()
+            //.HasOne(i => i.CreatedBy)
+            //.WithMany()
+            //.HasForeignKey(i => i.CreatedById)
+            //.OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Issue>()
-                .HasOne(i => i.Assignee)
-                .WithMany()
-                .HasForeignKey(i => i.AssigneeId)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<Issue>()
+            //    .HasOne(i => i.Assignee)
+            //    .WithMany()
+            //    .HasForeignKey(i => i.AssigneeId)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Issue>()
-                .HasOne(i => i.ChangedBy)
-                .WithMany()
-                .HasForeignKey(i => i.ChangedById)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<Issue>()
+            //    .HasOptional(i => i.ChangedBy)
+            //    .WithMany()
+            //    .HasForeignKey(i => i.ChangedById)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Project>()
-                .HasOne(i => i.CreatedBy)
-                .WithMany()
-                .HasForeignKey(i => i.CreatedById)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<Project>()
+            //    .HasOne(i => i.CreatedBy)
+            //    .WithMany()
+            //    .HasForeignKey(i => i.CreatedUserId)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Project>()
-                .HasOne(i => i.Assignee)
-                .WithMany()
-                .HasForeignKey(i => i.AssigneeId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Project>()
-                .HasOne(i => i.ChangedBy)
-                .WithMany()
-                .HasForeignKey(i => i.ChangedById)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<Project>()
+            //    .HasOne(i => i.ChangedBy)
+            //    .WithMany()
+            //    .HasForeignKey(i => i.ChangedUserId)
+            //    .OnDelete(DeleteBehavior.Restrict);
         }
 
     }

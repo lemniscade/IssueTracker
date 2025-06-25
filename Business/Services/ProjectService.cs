@@ -18,9 +18,9 @@ namespace IssueTracker.Business.Services
             _validator = validator;
             _projectRepository = projectRepository;
         }
-        public void CreateProject(string title, string description, string assigneeUsername, UserService userService)
+        public void CreateProject(string title, string description, UserService userService)
         {
-            _projectRepository.Create(title, description, assigneeUsername,userService);
+            _projectRepository.Create(title, description,userService);
         }
 
         public void DeleteProject(string title)
@@ -30,15 +30,15 @@ namespace IssueTracker.Business.Services
 
         public IEnumerable<Project> GetAllProjects(string? title, string? username)
         {
-           List<Project> projectList=_projectRepository.GetAll(username, title).ToList();
+           List<Project> projectList=_projectRepository.GetAll(title, username).ToList();
 
            return projectList;
 
         }
 
-        public void UpdateProject(string findingTitle, string? title, string? description, string? assigneeUsername,UserService userService)
+        public void UpdateProject(string findingTitle, string? title, string? description,UserService userService)
         {
-            _projectRepository.Update(findingTitle, title, description, assigneeUsername,userService);
+            _projectRepository.Update(findingTitle, title, description,userService);
         }
     }
 }

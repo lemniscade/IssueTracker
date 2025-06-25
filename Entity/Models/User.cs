@@ -6,13 +6,9 @@ public class User
 {
     [Key]
     public int Id { get; set; } = default!;
-    [MaxLength(10)]
     public string Username { get; set; } = default!;
     public string Password { get; set; } = default!;
-    public ICollection<Project> OwnedProjects { get; set; } = new List<Project>();
-
-    public ICollection<Issue> CreatedIssues { get; set; } = new List<Issue>();
-    public ICollection<Issue> AssignedIssues { get; set; } = new List<Issue>();
-    public ICollection<Issue> ChangedIssues { get; set; } = new List<Issue>();
+    public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
+    public ICollection<IssueUser> IssueUsers { get; set; }
 
 }

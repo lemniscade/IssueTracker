@@ -12,12 +12,9 @@ namespace IssueTracker.Business.Validations
             RuleFor(project => project.Description)
                 .NotEmpty().WithMessage("Project description is required.")
                 .Length(10, 500).WithMessage("Project description must be between 10 and 500 characters.");
-            RuleFor(project => project.CreatedBy)
-                .NotEmpty().WithMessage("Project must have a creator.")
-                .Must(user => user != null).WithMessage("Creator must be a valid user.");
-            RuleFor(project => project.Assignee)
-                .Must(user => user != null).WithMessage("Project must have an assignee.")
-                .WithMessage("Assignee must be a valid user.");
+            RuleFor(issue => issue.ProjectUsers)
+            .NotNull().NotEmpty().Must(iu => iu.Any(x => x.UserTypeEnumId == 3))
+            .WithMessage("At least one Assigned user is required.");
             RuleFor(project => project.CreatedAt)
                 .NotEmpty().WithMessage("Project creation date is required.")
                 .LessThanOrEqualTo(DateTime.Now).WithMessage("Project creation date cannot be in the future.");

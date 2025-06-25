@@ -53,7 +53,7 @@ namespace IssueTracker.Business.Services
 
         public bool Delete(string username)
         {
-            bool isUserExist = Login(username, null);
+            bool isUserExist=_userRepository.IsUserExist(username, null);
             if (isUserExist)
             {
                 return _userRepository.Delete(username);
@@ -61,9 +61,14 @@ namespace IssueTracker.Business.Services
             return false;
         }
 
-        public bool IsAdmin(string username,string password)
+        public bool IsAdmin(string username, string password)
         {
             return _userRepository.IsAdmin(username, password);
+        }
+
+        public bool IsUserExist(string username, string password)
+        {
+            return _userRepository.IsUserExist(username, password);
         }
     }
 }

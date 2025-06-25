@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IssueTracker.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250618070657_Seventh")]
-    partial class Seventh
+    [Migration("20250620104513_Third")]
+    partial class Third
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,17 +36,8 @@ namespace IssueTracker.Migrations
                     b.Property<DateTime>("AssignedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("AssigneeId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ChangedById")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("CreatedById")
-                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -74,32 +65,37 @@ namespace IssueTracker.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("UserId")
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("Issues");
+                });
+
+            modelBuilder.Entity("IssueTracker.Entity.Models.IssueUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId1")
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("IssueId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId2")
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserTypeEnumId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssigneeId");
-
-                    b.HasIndex("ChangedById");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("ProjectId");
+                    b.HasIndex("IssueId");
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("UserId1");
-
-                    b.HasIndex("UserId2");
-
-                    b.ToTable("Issues");
+                    b.ToTable("IssueUsers");
                 });
 
             modelBuilder.Entity("IssueTracker.Entity.Models.Log", b =>
@@ -130,48 +126,49 @@ namespace IssueTracker.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("AssigneeId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("ChangedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<int?>("ChangedById")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CreatedById")
-                        .HasColumnType("int");
-
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("UserId")
+                    b.HasKey("Id");
+
+                    b.ToTable("Projects");
+                });
+
+            modelBuilder.Entity("IssueTracker.Entity.Models.ProjectUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserTypeEnumId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssigneeId");
-
-                    b.HasIndex("ChangedById");
-
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("ProjectId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Projects");
+                    b.ToTable("ProjectUsers");
                 });
 
             modelBuilder.Entity("IssueTracker.Entity.Models.User", b =>
@@ -188,8 +185,7 @@ namespace IssueTracker.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -198,94 +194,70 @@ namespace IssueTracker.Migrations
 
             modelBuilder.Entity("IssueTracker.Entity.Models.Issue", b =>
                 {
-                    b.HasOne("IssueTracker.Entity.Models.User", "Assignee")
-                        .WithMany()
-                        .HasForeignKey("AssigneeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("IssueTracker.Entity.Models.User", "ChangedBy")
-                        .WithMany()
-                        .HasForeignKey("ChangedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("IssueTracker.Entity.Models.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("IssueTracker.Entity.Models.Project", "Project")
                         .WithMany("Issues")
                         .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("IssueTracker.Entity.Models.User", null)
-                        .WithMany("AssignedIssues")
-                        .HasForeignKey("UserId");
-
-                    b.HasOne("IssueTracker.Entity.Models.User", null)
-                        .WithMany("ChangedIssues")
-                        .HasForeignKey("UserId1");
-
-                    b.HasOne("IssueTracker.Entity.Models.User", null)
-                        .WithMany("CreatedIssues")
-                        .HasForeignKey("UserId2");
-
-                    b.Navigation("Assignee");
-
-                    b.Navigation("ChangedBy");
-
-                    b.Navigation("CreatedBy");
 
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("IssueTracker.Entity.Models.Project", b =>
+            modelBuilder.Entity("IssueTracker.Entity.Models.IssueUser", b =>
                 {
-                    b.HasOne("IssueTracker.Entity.Models.User", "Assignee")
-                        .WithMany()
-                        .HasForeignKey("AssigneeId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("IssueTracker.Entity.Models.Issue", "Issue")
+                        .WithMany("IssueUsers")
+                        .HasForeignKey("IssueId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IssueTracker.Entity.Models.User", "ChangedBy")
-                        .WithMany()
-                        .HasForeignKey("ChangedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("IssueTracker.Entity.Models.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("IssueTracker.Entity.Models.User", "User")
+                        .WithMany("IssueUsers")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IssueTracker.Entity.Models.User", null)
-                        .WithMany("OwnedProjects")
-                        .HasForeignKey("UserId");
+                    b.Navigation("Issue");
 
-                    b.Navigation("Assignee");
+                    b.Navigation("User");
+                });
 
-                    b.Navigation("ChangedBy");
+            modelBuilder.Entity("IssueTracker.Entity.Models.ProjectUser", b =>
+                {
+                    b.HasOne("IssueTracker.Entity.Models.Project", "Project")
+                        .WithMany("ProjectUsers")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("CreatedBy");
+                    b.HasOne("IssueTracker.Entity.Models.User", "User")
+                        .WithMany("ProjectUsers")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("IssueTracker.Entity.Models.Issue", b =>
+                {
+                    b.Navigation("IssueUsers");
                 });
 
             modelBuilder.Entity("IssueTracker.Entity.Models.Project", b =>
                 {
                     b.Navigation("Issues");
+
+                    b.Navigation("ProjectUsers");
                 });
 
             modelBuilder.Entity("IssueTracker.Entity.Models.User", b =>
                 {
-                    b.Navigation("AssignedIssues");
+                    b.Navigation("IssueUsers");
 
-                    b.Navigation("ChangedIssues");
-
-                    b.Navigation("CreatedIssues");
-
-                    b.Navigation("OwnedProjects");
+                    b.Navigation("ProjectUsers");
                 });
 #pragma warning restore 612, 618
         }
