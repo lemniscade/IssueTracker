@@ -7,6 +7,7 @@ using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +36,8 @@ namespace IssueTracker.DataAccess.Repositories
             {
                 foreach (var error in validationResult.Errors)
                 {
-                    Console.WriteLine($"Hata: {error.ErrorMessage}");
+                    _logging.Create(error.ErrorMessage, new Dictionary<string, object> { { "Error", error.ErrorMessage } });
+                    AnsiConsole.MarkupLine($"\n[red]{error.ErrorMessage}[/]");
                 }
             }
             return false;
@@ -47,7 +49,8 @@ namespace IssueTracker.DataAccess.Repositories
                 User previosuUser = context.Users.FirstOrDefault(u => u.Username == username);
                 if(previosuUser != null)
                 {
-                    Console.WriteLine("User already exists.");
+                    _logging.Create("User already exists.", new Dictionary<string, object> { { "Error", "There is another user with same username." } });
+                    AnsiConsole.MarkupLine("\n[red]User already exists.[/]");
                     return false;
                 }
                 var user = new User
@@ -57,14 +60,15 @@ namespace IssueTracker.DataAccess.Repositories
                     };
                 if(IsUserExist(username, password))
                 {
-                    Console.WriteLine("User register operation failed, there is a user with same username.");
-                    this._logging.Create("User register operation failed, there is a user with same username.", new Dictionary<string, object> { { "Attempted username", username } });
+                    this._logging.Create("User register operation failed, there is a user with same username.", new Dictionary<string, object> { { "Error", "There is another user with the same username." } });
+                    AnsiConsole.MarkupLine("\n[red]User register operation failed, there is a user with same username.[/]");
+                   
                     return false;
                 }
                 if (ValidateUser(user))
                 {
-                    Console.WriteLine("Validation failed. User not created.");
-                    this._logging.Create("Validation failed. User not created.", new Dictionary<string, object> { { "Attempted username", username } });
+                    AnsiConsole.MarkupLine("\n[red]Validation failed. User not created.[/]");
+                    
                     return false;
                 }
                     user.Password = HashPassword(password);
@@ -79,7 +83,8 @@ namespace IssueTracker.DataAccess.Repositories
                         var user = context.Users.FirstOrDefault(u => u.Username == oldUsername);
                     if (user == null)
                     {
-                        Console.WriteLine("User can't find. Please repeat again with different username.");
+                    _logging.Create("User can't find.", new Dictionary<string, object> { { "Error", "User can't find with this credentials." } });
+                    AnsiConsole.MarkupLine("\n[red]User can't find. Please repeat again with different username.[/]");
                     }
                             user.Username = newUsername;
                             user.Password = password;

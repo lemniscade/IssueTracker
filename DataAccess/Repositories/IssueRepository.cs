@@ -7,19 +7,23 @@ using IssueTracker.Business.Validations;
 using IssueTracker.Entity;
 using IssueTracker.Entity.Enums;
 using IssueTracker.Entity.Models;
+using IssueTracker.Migrations;
 using Microsoft.EntityFrameworkCore;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization.Formatters;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace IssueTracker.DataAccess.Repositories
 {
     public class IssueRepository : IIssueRepository
     {
         private IssueValidator _validator = new IssueValidator();
+        private ExceptionLogging _logging = new ExceptionLogging();
         public bool Create(string title, string description, int type, int statusId, int priority, string assigneeUsername, string createdUsername, int effort, string projectTitle, UserService userService)
         {
             
@@ -28,13 +32,22 @@ namespace IssueTracker.DataAccess.Repositories
                 Project project = context.Projects.FirstOrDefault(p => p.Title == projectTitle);
                 if(project == null)
                 {
-                    Console.WriteLine("Project not found");
+                    _logging.Create("Project not found.", new Dictionary<string, object> { { "Error", "There is not any project which you want." } });
+                    AnsiConsole.MarkupLine("[red]Project not found[/]");
                     return false;
                 }
                 Issue previousIssue = context.Issues.FirstOrDefault(i => i.Title == title);
                 if(previousIssue != null)
                 {
-                    Console.WriteLine("An issue with the same title already exists.");
+                    _logging.Create("An issue with the same title already exists.", new Dictionary<string, object> { { "Error", "There is another issue with same title" } });
+                    AnsiConsole.MarkupLine("[red]An issue with the same title already exists.[/]");
+                    return false;
+                }
+                User user=context.Users.FirstOrDefault(u => u.Username == assigneeUsername);
+                if (user == null)
+                {
+                    _logging.Create("User to assign is not exist.", new Dictionary<string, object> { { "Error", "User to assign is not exist." } });
+                    AnsiConsole.MarkupLine("[red]User to assign is not exist.[/]");
                     return false;
                 }
                 List<IssueUser> users = new List<IssueUser>
@@ -71,14 +84,16 @@ namespace IssueTracker.DataAccess.Repositories
                 {
                     foreach (var error in validationResult.Errors)
                     {
-                        Console.WriteLine(error.ErrorMessage);
+                        _logging.Create(error.ErrorMessage,new Dictionary<string, object> { { "Error", error.ErrorMessage} });
+                        AnsiConsole.MarkupLine($"\n[red]{error.ErrorMessage}[/]");
                         return false;
                     }
                 }
                 bool exists = context.Issues.Any(i => i.Title == title);
                 if (exists)
                 {
-                    Console.WriteLine("An issue with the same title already exists.");
+                    _logging.Create("Issue creation failed, an issue with the same title already exists.", new Dictionary<string, object> { { "Error", "Tere is another issue with same title" } });
+                    AnsiConsole.MarkupLine("\n[red]An issue with the same title already exists.[/]");
                     return false;
                 }
                 context.Issues.Add(issue);
@@ -93,10 +108,38 @@ namespace IssueTracker.DataAccess.Repositories
                 Issue previousIssue = context.Issues.FirstOrDefault(i => i.Title == title);
                 if (previousIssue != null)
                 {
-                    Console.WriteLine("An issue with the same title already exists.");
+                    _logging.Create("An issue with the same title already exists.", new Dictionary<string, object> { { "Error", "There is another issue with same title" } });
+                    AnsiConsole.MarkupLine("\n[red]An issue with the same title already exists..[/]");
                     return false;
                 }
-                Issue issue = context.Issues.FirstOrDefault(i => i.Title == findingTitle);
+                //Issue issue = context.Issues.FirstOrDefault(i => i.Title == findingTitle);
+
+                //            List<IssueUser> assignedBefore = new List<IssueUser>();
+                //            assignedBefore = context.Issues.Include(i => i.IssueUsers)
+                //    .ThenInclude(iu => iu.User)
+                //.Where(i => i.Id == issue.Id)
+                //.SelectMany(i => i.IssueUsers).ToList();
+                //            issue.IssueUsers= assignedBefore;
+
+
+                Issue issue = context.Issues
+    .Include(i => i.IssueUsers)
+        .ThenInclude(iu => iu.User)
+    .FirstOrDefault(i => i.Title == findingTitle);
+                //.Include(i => i.IssueUsers)
+                //    .ThenInclude(iu => iu.User)
+                //.Where(i => i.Id == issue.Id)
+                //.SelectMany(i => i.IssueUsers).FirstOrDefault(x => x.UserTypeEnumId == 3);
+                //            if (issue.IssueUsers.Count==0){
+                //           IssueUser assignedBefore = context.Issues
+                //.Include(i => i.IssueUsers)
+                //    .ThenInclude(iu => iu.User)
+                //.Where(i => i.Id == issue.Id)
+                //.SelectMany(i => i.IssueUsers).FirstOrDefault(x => x.UserTypeEnumId == 3);
+                //            List<IssueUser> listOfAssignedUser=new List<IssueUser>();
+                //                issue.IssueUsers.Add(assignedBefore);
+                //            }
+
                 if (issue != null)
                 {
                     if (title != null) issue.Title = title;
@@ -104,31 +147,57 @@ namespace IssueTracker.DataAccess.Repositories
                     if (type != null) issue.TypeEnumId = (int)type;
                     if (statusId != null) issue.StatusEnumId = statusId.Value;
                     if (priority != null) issue.PriorityEnumId = priority.Value;
-                    if (assigneeUsername != null || assigneeUsername != "") {
-                        issue.IssueUsers.Add(
+                    if (!string.IsNullOrEmpty(assigneeUsername)) {
+                        User user = context.Users.FirstOrDefault(u => u.Username == assigneeUsername);
+                        if (user == null)
+                        {
+                            _logging.Create("User to assign is not exist.", new Dictionary<string, object> { { "Error", "User to assign is not exist." } });
+                            AnsiConsole.MarkupLine("[red]User to assign is not exist.[/]");
+                            assigneeUsername = null;
+                            return false;
+                        }
+
+
+
+                        var assignee = issue.IssueUsers.FirstOrDefault(iu => iu.UserTypeEnumId == 3);
+                        if (assignee != null)
+                        {
+                            assignee.User = user;
+                        }
+                        else
+                        {
+                            issue.IssueUsers.Add(
                     new IssueUser
                     {
                         User = context.Users.FirstOrDefault(u => u.Username == assigneeUsername),
                         UserTypeEnumId = 3
                     }
                     );
+                        }
                     }
-                    if (updatedUsername != null || updatedUsername != "")
+                    if (!string.IsNullOrEmpty(updatedUsername))
                     {
-                        issue.IssueUsers.Add(
-                    new IssueUser
-                    {
-                        User = context.Users.FirstOrDefault(u => u.Username == updatedUsername),
-                        UserTypeEnumId = 2
-                    }
-                    );
+                        var created = issue.IssueUsers.FirstOrDefault(iu => iu.UserTypeEnumId == 1);
+                        if (created != null)
+                        {
+                            created.User = context.Users.FirstOrDefault(u => u.Username == updatedUsername);
+                        }
 
                         issue.UpdatedAt = DateTime.Now;
                     }
                     if (effort != null) issue.Effort = effort.Value;
-                    if (projectTitle != null || projectTitle != "")
+                    if (!string.IsNullOrEmpty(projectTitle))
                     {
-                        issue.Project = context.Projects.FirstOrDefault(p => p.Title == projectTitle);
+                        
+                            Project isExistProject= context.Projects.FirstOrDefault(p => p.Title == projectTitle);
+                        if(isExistProject!=null){
+                            issue.Project = isExistProject;
+                        }
+                        else
+                        {
+                            _logging.Create("There is not any project with this name", new Dictionary<string, object> { { "Error", "There is not any project with this name" } });
+                            AnsiConsole.MarkupLine("\n[red]There is not any project with this name[/]");
+                        }
                     }
                 }
 
@@ -138,7 +207,8 @@ namespace IssueTracker.DataAccess.Repositories
                 {
                     foreach (var error in validationResult.Errors)
                     {
-                        Console.WriteLine($"{error.ErrorMessage}");
+                        _logging.Create(error.ErrorMessage, new Dictionary<string, object> { { "Error", error.ErrorMessage } });
+                        AnsiConsole.MarkupLine($"\n[red]{error.ErrorMessage}[/]");
                     }
                 }
 
@@ -148,8 +218,8 @@ namespace IssueTracker.DataAccess.Repositories
                     bool titleExists = context.Issues.Any(i => i.Title == title && i.Id != issue.Id);
                     if (titleExists)
                     {
-
-                        Console.WriteLine("An issue with the same title already exists.");
+                        _logging.Create("An issue with the same title already exists.", new Dictionary<string, object> { { "Error", "There is another issue with same title" } });
+                        AnsiConsole.MarkupLine("\n[red]An issue with the same title already exists.[/]");
                         return false;
                     }
                 }
@@ -164,14 +234,15 @@ namespace IssueTracker.DataAccess.Repositories
                 var issue = context.Issues.FirstOrDefault(i => i.Title == title);
                 if (issue == null)
                 {
-                    Console.WriteLine("Issue not found for delete operations");
+                    _logging.Create("Issue not found for delete operations.", new Dictionary<string, object> { { "Error","There is no issue for delete." } });
+                    AnsiConsole.MarkupLine("\n[red]Issue not found for delete operations.[/]");
                 }
                 context.Issues.Remove(issue);
                 return context.SaveChanges() > 0;
             }
         }
 
-        public List<Issue> GetAll(List<Issue> issueList, string? username, string? title, int? type, bool? ascending, int? priority, int? status)
+        public List<Issue> GetAll(List<Issue> issueList, string? username, string? title, int? type, int? typeAscending,  int? priority, bool? priorityAscending, int? status)
         {
             List<Issue> issues;
             if (issueList.Count == 0)
@@ -184,7 +255,13 @@ namespace IssueTracker.DataAccess.Repositories
             }
 
             using (var context = new ApplicationDbContext())
-            {
+            {   if(issues.Count == 0)
+                {
+                    issues = context.Issues.Include(i => i.IssueUsers)
+                                            .ThenInclude(iu => iu.User)
+                                        .ToList();
+                }
+                
                 if (!string.IsNullOrEmpty(username))
                 {
                     issues = context.Issues.Include(i => i.IssueUsers)
@@ -200,23 +277,39 @@ namespace IssueTracker.DataAccess.Repositories
                 {
                     issues = issues.Where(i => i.TypeEnumId == type.Value).ToList();
                 }
+                if(priority.HasValue)
+                {
+                    issues = issues.Where(i => i.PriorityEnumId == priority.Value).ToList();
+                }
                 if (status.HasValue)
                 {
                     issues = issues.Where(i => i.StatusEnumId == status.Value).ToList();
                 }
-                if (ascending.HasValue)
+                if (priorityAscending.HasValue)
                 {
-                    if (ascending.Value==true)
+                    if (priorityAscending.Value==true)
                     {
-                        issues.OrderBy(i => i.PriorityEnumId).ToList();
+                        issues=issues.OrderBy(i => i.PriorityEnumId).ToList();
                     }
-                    else if(ascending.Value==false)
+                    else if(priorityAscending.Value==false)
                     {
-                        issues.OrderByDescending(i => i.PriorityEnumId).ToList();
+                        issues=issues.OrderByDescending(i => i.PriorityEnumId).ToList();
+                    }
+                }
+                if(typeAscending.HasValue)
+                {
+                    if (typeAscending.Value == 1)
+                    {
+                        issues = issues.OrderBy(i => i.TypeEnumId==1).ToList();
+                    }
+                    else if (typeAscending.Value == 2)
+                    {
+                        issues = issues.OrderByDescending(i => i.TypeEnumId==2).ToList();
                     }
                 }
                 return issues;
             }
         }
+
     }
 }

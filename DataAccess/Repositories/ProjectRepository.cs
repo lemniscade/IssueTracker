@@ -1,10 +1,13 @@
 ﻿using FluentValidation;
+using FluentValidation.Validators;
+using IssueTracker.Business.Logging;
 using IssueTracker.Business.Services;
 using IssueTracker.Business.UI;
 using IssueTracker.Business.Validations;
 using IssueTracker.Entity;
 using IssueTracker.Entity.Models;
 using Microsoft.EntityFrameworkCore;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +18,7 @@ namespace IssueTracker.DataAccess.Repositories
 {
     public class ProjectRepository : IProjectRepository
     {
+        private ExceptionLogging _logging = new ExceptionLogging();
         private User existUser;
         IValidator<User> validatorForUser = new UserValidator();
         public ProjectRepository(UserService userService)
@@ -31,7 +35,8 @@ namespace IssueTracker.DataAccess.Repositories
                 Project previousProject = context.Projects.FirstOrDefault(p => p.Title == title);
                 if (previousProject != null)
                 {
-                    Console.WriteLine("A project with the same title already exists.");
+                    _logging.Create("A project with the same title already exists.", new Dictionary<string, object> { { "Error", "There is another project with same title" } });
+                    AnsiConsole.MarkupLine("\n[red]A project with the same title already exists.[/]");
                     return false;
                 }
                 users = new List<ProjectUser>
@@ -61,7 +66,8 @@ namespace IssueTracker.DataAccess.Repositories
                 Project previousProject = context.Projects.FirstOrDefault(p => p.Title == title);
                 if (previousProject != null)
                 {
-                    Console.WriteLine("A project with the same title already exists.");
+                    _logging.Create("A project with the same title already exists.", new Dictionary<string, object> { { "Error", "There is another project with same title" } });
+                    AnsiConsole.MarkupLine("\n[red]A project with the same title already exists.[/]");
                     return false;
                 }
                 users = new List<ProjectUser>
@@ -100,56 +106,57 @@ namespace IssueTracker.DataAccess.Repositories
             using (var context = new ApplicationDbContext())
             {
 
-                projects = context.Projects
-    .Include(p => p.ProjectUsers)
-        .ThenInclude(pu => pu.User)
-    .Include(p => p.Issues)
-        .ThenInclude(i => i.IssueUsers)
-            .ThenInclude(iu => iu.User)
-    .ToList();
+                projects = context.Projects.ToList();
 
-                // Döngüsel referansları kırmak için manuel temizleme:
-                foreach (var project in projects)
-                {
-                    foreach (var pu in project.ProjectUsers)
-                    {
-                        pu.Project = null; // ProjectUser içindeki Project'i boşalt
-                        if (pu.User != null)
-                        {
-                            pu.User.ProjectUsers = null; // User içindeki listeleri null yap
-                            pu.User.IssueUsers = null;
-                        }
-                    }
+                //// Döngüsel referansları kırmak için manuel temizleme:
+                //foreach (var project in projects)
+                //{
+                //    foreach (var pu in project.ProjectUsers)
+                //    {
+                //        pu.Project = null; // ProjectUser içindeki Project'i boşalt
+                //        if (pu.User != null)
+                //        {
+                //            pu.User.ProjectUsers = null; // User içindeki listeleri null yap
+                //            pu.User.IssueUsers = null;
+                //        }
+                //    }
 
-                    foreach (var issue in project.Issues)
-                    {
-                        issue.Project = null; // Issue içindeki Project'i boşalt
-                        foreach (var iu in issue.IssueUsers)
-                        {
-                            iu.Issue = null; // IssueUser içindeki Issue'yi boşalt
-                            if (iu.User != null)
-                            {
-                                iu.User.ProjectUsers = null;
-                                iu.User.IssueUsers = null;
-                            }
-                        }
-                    }
-                }
+                //    foreach (var issue in project.Issues)
+                //    {
+                //        issue.Project = null; // Issue içindeki Project'i boşalt
+                //        foreach (var iu in issue.IssueUsers)
+                //        {
+                //            iu.Issue = null; // IssueUser içindeki Issue'yi boşalt
+                //            if (iu.User != null)
+                //            {
+                //                iu.User.ProjectUsers = null;
+                //                iu.User.IssueUsers = null;
+                //            }
+                //        }
+                //    }
+                //}
 
 
                 if (!string.IsNullOrEmpty(username))
                 {
-                    projects = context.Projects.Where(i => i.ProjectUsers.Any(pu => pu.User.Username == username))
-                                                .ToList();
+                    //projects = context.Projects.Where(i => i.ProjectUsers.Any(pu => pu.User.Username == username))
+                    //                            .ToList();
+
+                    foreach(var proj in projects)
+                    {
+                        proj.ProjectUsers = proj.ProjectUsers
+                                 .Where(pu => pu.User.Username == username)
+                                 .ToList();
+                    }
                 }
                 if (!string.IsNullOrEmpty(title))
                 {
                     projects = projects.Where(i => i.Title == title).ToList();
                 }
-                foreach (var proj in projects)
-                {
-                    proj.Issues = context.Issues.Where(issue => issue.ProjectId == proj.Id).ToList();
-                }
+                //foreach (var proj in projects)
+                //{
+                //    proj.Issues = context.Issues.Where(issue => issue.ProjectId == proj.Id).ToList();
+                //}
                 if (projects.Count > 0)
                 {
                     return projects;

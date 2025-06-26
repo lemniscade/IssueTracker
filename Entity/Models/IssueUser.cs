@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
 
 namespace IssueTracker.Entity.Models
@@ -10,6 +11,7 @@ namespace IssueTracker.Entity.Models
     {
         public int Id { get; set; } = default!;
         public int IssueId { get; set; }
+        [JsonIgnore]
         public Issue Issue { get; set; }
 
         public int UserId { get; set; }

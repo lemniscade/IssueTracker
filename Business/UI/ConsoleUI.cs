@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using IssueTracker.Business.Logging;
 using IssueTracker.Business.Services;
 using IssueTracker.Business.Validations;
 using IssueTracker.DataAccess.Repositories;
@@ -12,6 +13,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,6 +26,8 @@ namespace IssueTracker.Business.UI
         private UserService userService;
         private User existUser;
         private JsonExport jsonExport;
+        private ExceptionLogging _logging = new ExceptionLogging();
+        private IUserRepository userRepository;
         public ConsoleUI()
         {
             IValidator<Issue> validatorForIssue = new IssueValidator();
@@ -31,8 +35,7 @@ namespace IssueTracker.Business.UI
             IValidator<Project> validatorForProject = new ProjectValidator();
 
             IValidator<User> validatorForUser = new UserValidator();
-            AnsiConsole.MarkupLine("[bold green]Issue Tracker Console UI[/]");
-            AnsiConsole.MarkupLine("You are welcome!");
+            
             this.issueService = new IssueService(validatorForIssue, issueRepository);
 
             IUserRepository userRepository = new UserRepository(validatorForUser);
@@ -43,6 +46,8 @@ namespace IssueTracker.Business.UI
         }
         public User getCurrentUser()
         {
+            IValidator<User> validatorForUser = new UserValidator();
+            IUserRepository userRepository = new UserRepository(validatorForUser);
             return this.existUser;
         }
         public async void Execute()
@@ -69,12 +74,18 @@ namespace IssueTracker.Business.UI
             string usernameOfChanger;
             string passwordOfChanger;
             bool isUserExist;
+            bool breakWhile = false;
+            bool breakWhileOuter = false;
             User currentUser = getCurrentUser();
             string path;
             string choosePriority = "1. Ascending";
             bool flag = false;
+            int typeIdtoOrder = 1;
 
-           
+            AnsiConsole.Write(new FigletText("Issue Tracker")
+                .Centered()
+                .Color(Color.Orange1));
+
 
             var app = new CommandApp();
             while (true)
@@ -106,11 +117,13 @@ namespace IssueTracker.Business.UI
                         bool loggedIn = userService.Login(username, password);
                         if (!loggedIn)
                         {
-                            Console.WriteLine("Login failed. Please check your username and password.");
+                            _logging.Create("User login failed.", new Dictionary<string, object> { { "Username", username } });
+                            AnsiConsole.MarkupLine("\n[red]Login failed. Please check your username and password.[/]");
                         }
-                        else
-                        {
+                        else {
                             this.existUser = userService.existUser;
+                            AnsiConsole.MarkupLine($"\n[green]Successfully logged in. Welcome {this.existUser.Username}.[/]");
+
                         }
                         if (this.existUser != null)
                         {
@@ -157,7 +170,8 @@ namespace IssueTracker.Business.UI
                                 }
                                 else
                                 {
-                                    AnsiConsole.MarkupLine("[bold red]You must login first to add a project![/]");
+                                _logging.Create("You must login first to add a project!", new Dictionary<string, object> { { "Error", "User not logged in." } });
+                                AnsiConsole.MarkupLine("[bold red]You must login first to add a project![/]");
                                 }
                                 break;
                             case "2. Update Project":
@@ -186,7 +200,8 @@ namespace IssueTracker.Business.UI
                                 }
                                 else
                                 {
-                                    AnsiConsole.MarkupLine("[bold red]You must login first to update a project![/]");
+                                _logging.Create("User tried to update a project without being logged in.", new Dictionary<string, object> { { "Error", "User not logged in." } });
+                                AnsiConsole.MarkupLine("[bold red]User tried to update a project without being logged in.[/]");
                                 }
                                 break;
                             case "3. Create Issue":
@@ -281,7 +296,8 @@ namespace IssueTracker.Business.UI
                                 }
                                 else
                                 {
-                                    AnsiConsole.MarkupLine("[bold red]You must login first to create an issue![/]");
+                                _logging.Create("You must login first to create an issue!", new Dictionary<string, object> { { "Error", "User not logged in." } });
+                                AnsiConsole.MarkupLine("[bold red]You must login first to create an issue![/]");
                                 }
                                 break;
                             case "4. Edit Issue":
@@ -349,8 +365,8 @@ namespace IssueTracker.Business.UI
                                                     .AddChoices(new[] {
                         "1. Proposed",
                         "2. Active",
-                        "3. Proposed",
-                        "4. Active",
+                        "3. Pending Deployment",
+                        "4. Resolved",
                                                     }));
 
                                             switch (status)
@@ -409,14 +425,6 @@ namespace IssueTracker.Business.UI
                                             {
                                                 assignee = null;
                                             }
-                                            else
-                                            {
-                                                if (!userService.IsUserExist(assignee, null))
-                                                {
-                                                    AnsiConsole.MarkupLine("[bold red]Assignee user does not exist![/]");
-                                                    break;
-                                                }
-                                            }
                                             break;
                                         case "7. Edit Project":
                                             project = AnsiConsole.Ask<string>("Enter the project:");
@@ -430,10 +438,14 @@ namespace IssueTracker.Business.UI
                                             break;
                                     }
                                     issueService.UpdateIssue(findingTitle, issueTitle, issueDescription, type, statusId, priorityId, assignee, existUser.Username, effort, project);
-                                }
+                                assignee = null;
+                                effort = null;
+                                issueTitle = null;
+                            }
                                 else
                                 {
-                                    AnsiConsole.MarkupLine("[bold red]You must login first to edit an issue![/]");
+                                _logging.Create("You must login first to edit an issue!", new Dictionary<string, object> { { "Error", "User not logged in." } });
+                                AnsiConsole.MarkupLine("[bold red]You must login first to edit an issue![/]");
                                 }
                                 break;
                             case "5. Delete Issue":
@@ -444,7 +456,8 @@ namespace IssueTracker.Business.UI
                                 }
                                 else
                                 {
-                                    AnsiConsole.MarkupLine("[bold red]You must login first to delete an issue![/]");
+                                _logging.Create("You must login first to delete an issue!", new Dictionary<string, object> { { "Error", "User not logged in." } });
+                                AnsiConsole.MarkupLine("[bold red]You must login first to delete an issue![/]");
                                 }
                                 break;
                             case "6. Delete Project":
@@ -455,7 +468,8 @@ namespace IssueTracker.Business.UI
                                 }
                                 else
                                 {
-                                    AnsiConsole.MarkupLine("[bold red]You must login first to delete a project![/]");
+                                _logging.Create("You must login first to delete a project!", new Dictionary<string, object> { { "Error", "User not logged in." } });
+                                AnsiConsole.MarkupLine("[bold red]You must login first to delete a project![/]");
                                 }
                                 break;
                             case "7. List Projects":
@@ -472,48 +486,88 @@ namespace IssueTracker.Business.UI
                                         assignee = null;
                                     }
                                     List<Project> projects = (List<Project>)projectService.GetAllProjects(assignee, projectTitle);
-                                    if (projects.Count > 0)
+                                    //if (projects.Count > 0)
+                                    //{
+                                    //    AnsiConsole.MarkupLine("[bold green]Projects:[/]");
+                                    //    //foreach (var proj in projects)
+                                    //    //{
+                                    //    //    AnsiConsole.MarkupLine($"[bold blue]Title:[/] {proj.Title} [bold yellow]Description:[/] {proj.Description}");
+                                    //    //}
+                                    //    path = AnsiConsole.Ask<string>("Enter path you want to export:");
+                                    //    jsonExport.ExportIssuesToJsonAsync(path, projects);
+                                    //}
+                                    if(projects.Count==0)
                                     {
-                                        AnsiConsole.MarkupLine("[bold green]Projects:[/]");
-                                        foreach (var proj in projects)
-                                        {
-                                            AnsiConsole.MarkupLine($"[bold blue]Title:[/] {proj.Title} [bold yellow]Description:[/] {proj.Description}");
-                                        }
-                                        path = AnsiConsole.Ask<string>("Enter path you want to export:");
-                                        jsonExport.ExportIssuesToJsonAsync(path, projects);
-                                    }
-                                    else
-                                    {
-                                        AnsiConsole.MarkupLine("[bold red]No projects found![/]");
-                                    }
+                                    _logging.Create("No projects found.", new Dictionary<string, object> { { "Error", "There is not any projects to show." } });
+                                    AnsiConsole.MarkupLine("[bold red]No projects found![/]");
                                 }
                                 else
                                 {
-                                    AnsiConsole.MarkupLine("[bold red]You must login first to list projects![/]");
+                                    path = AnsiConsole.Ask<string>("Enter path you want to export:");
+                                    jsonExport.ExportIssuesToJsonAsync(path, projects);
+                                }
+                            }
+                                else
+                                {
+                                _logging.Create("You must login first to list projects!", new Dictionary<string, object> { { "Error", "User not logged in." } });
+                                AnsiConsole.MarkupLine("[bold red]You must login first to list projects![/]");
                                 }
                                 break;
                             case "8. List Issues":
                                 List<Issue> issues = new List<Issue>();
-                                if (!string.IsNullOrEmpty(this.existUser.Username))
+                            if (!string.IsNullOrEmpty(this.existUser.Username))
+                            {
+                                
+                                
+                                while (true)
                                 {
-                                    string choose = AnsiConsole.Prompt(
-                                                new SelectionPrompt<string>()
-                                                    .Title("\n[green]Select the value you want :[/]")
-                                                    .PageSize(6)
-                                                    .AddChoices(new[] {
+                                    breakWhile = false;
+                                    
+                                    while (true)
+                                {
+                                        string choose = AnsiConsole.Prompt(
+                                            new SelectionPrompt<string>()
+                                                .Title("\n[green]Select the value you want :[/]")
+                                                .PageSize(8)
+                                                .AddChoices(new[] {
+                        "0. Filter By Username",
                         "1. Filter by Issue Title",
                         "2. Filter By Type",
-                        "3. Filter By Status",
-                        "4. Order by Priority"
-                                                    }));
+                        "3. Order By Type",
+                        "4. Filter By Status",
+                        "5. Filter by Priority",
+                        "6. Order by Priority",
+                        "7. Get All Issues",
+                        "8. Export Issues to Json",
+                                                }));
+                                        if (breakWhile)
+                                    {
+                                        break;
+                                    }
                                     switch (choose)
                                     {
+                                        case "0. Filter By Username":
+                                                breakWhile = true;
+                                                string usernameToFilter = AnsiConsole.Ask<string>("Enter the username to filter issues:");
+
+                                            //if (userService.IsUserExist(usernameToFilter, null))
+                                            //{
+                                            //    usernameToFilter = this.existUser.Username;
+                                            //}
+                                            //else
+                                            //{
+                                            //    AnsiConsole.MarkupLine("[bold red]Username to filter does not exist![/]");
+                                            //}
+                                            issues = issueService.GetAllIssues(issues, usernameToFilter, null, null, null, null, null, null);
+                                            break;
                                         case "1. Filter by Issue Title":
-                                            issueTitle = AnsiConsole.Ask<string>("Enter the title of issue to search:");
-                                            issues=issueService.GetAllIssues(issues, this.existUser.Username, issueTitle, null, null, null, null);
+                                                breakWhile = true;
+                                                issueTitle = AnsiConsole.Ask<string>("Enter the title of issue to search:");
+                                            issues = issueService.GetAllIssues(issues, this.existUser.Username, issueTitle, null, null, null, null, null);
                                             break;
                                         case "2. Filter By Type":
-                                            bugOrFeature = AnsiConsole.Prompt(
+                                                breakWhile = true;
+                                                bugOrFeature = AnsiConsole.Prompt(
                                             new SelectionPrompt<string>()
                                                 .Title("\n[green]What is the type?:[/]")
                                                 .PageSize(6)
@@ -531,10 +585,32 @@ namespace IssueTracker.Business.UI
                                                     type = 2;
                                                     break;
                                             }
-                                        issues=issueService.GetAllIssues(issues, this.existUser.Username, null, type, null, null, null);
+                                            issues = issueService.GetAllIssues(issues, this.existUser.Username, null, type, null, null, null, null);
                                             break;
-                                        case "3. Filter By Status":
-                                            status = AnsiConsole.Prompt(
+                                        case "3. Order By Type":
+                                                breakWhile = true;
+                                                var orderByType = AnsiConsole.Prompt(
+                                                new SelectionPrompt<string>()
+                                                    .Title("\n[green]Select the type you want to order:[/]")
+                                                    .PageSize(6)
+                                                    .AddChoices(new[] {
+                                                    "1. Bug first",
+                                                    "2. Feature first"
+                                                    }));
+                                            if (orderByType == "1. Bug first")
+                                            {
+                                                typeIdtoOrder = 1;
+
+                                            }
+                                            else if (orderByType == "2. Feature first")
+                                            {
+                                                typeIdtoOrder = 2;
+                                            }
+                                            issues = issueService.GetAllIssues(issues, null, null, null, typeIdtoOrder, null, null, null);
+                                            break;
+                                        case "4. Filter By Status":
+                                                breakWhile = true;
+                                                status = AnsiConsole.Prompt(
                                                 new SelectionPrompt<string>()
                                                     .Title("\n[green]What is the status? :[/]")
                                                     .PageSize(6)
@@ -560,10 +636,25 @@ namespace IssueTracker.Business.UI
                                                     statusId = 4;
                                                     break;
                                             }
-                                        issues=issueService.GetAllIssues(issues, this.existUser.Username, null, null, null, null, statusId);
+                                            issues = issueService.GetAllIssues(issues, null, null, null, null, null, null, statusId);
                                             break;
-                                        case "4. Order by Priority":
-                                            choosePriority = AnsiConsole.Prompt(
+                                        case "5. Filter by Priority":
+                                                breakWhile = true;
+                                                var priorityToFilter = AnsiConsole.Prompt(
+                                                        new SelectionPrompt<string>()
+                                                            .Title("\n[green]Select the priority you want to order:[/]")
+                                                            .PageSize(6)
+                                                            .AddChoices(new[] {
+                                                            "1. Low",
+                                                            "2. Medium",
+                                                            "3. High"
+                                                            }));
+
+
+                                            break;
+                                        case "6. Order by Priority":
+                                                breakWhile = true;
+                                                choosePriority = AnsiConsole.Prompt(
                                                     new SelectionPrompt<string>()
                                                         .Title("\n[green]Select the priority you want to order:[/]")
                                                         .PageSize(6)
@@ -571,14 +662,39 @@ namespace IssueTracker.Business.UI
                         "1. Ascending",
                         "2. Descending",
                                                         }));
+                                            issues = issueService.GetAllIssues(issues, null, null, null, null, null, choosePriority == "1. Ascending" ? true : false, null);
+                                            break;
+                                        case "7. Get All Issues":
+                                            issues = issueService.GetAllIssues(issues, null, null, null, null, null, null, null);
+                                                breakWhile = true;
+                                                break;
+                                        case "8. Export Issues to Json":
+                                            if (issues.Count == 0)
+                                            {
+                                                _logging.Create("No issues found.", new Dictionary<string, object> { { "Error", "There is not any issues to show." } });
+                                                AnsiConsole.MarkupLine("[red]No issues found![/]");
+                                            }
+                                            else
+                                            {
+
+                                                path = AnsiConsole.Ask<string>("Enter path you want to export:");
+                                                jsonExport.ExportIssuesToJsonAsync(path, issues);
+                                            }
+
+                                                breakWhileOuter = true;    
                                             break;
                                     }
-                                    issues=issueService.GetAllIssues(issues, this.existUser.Username, null, null, choosePriority == "1. Ascending" ? true : false, null, null);
-                                    path = AnsiConsole.Ask<string>("Enter path you want to export:");
-                                    jsonExport.ExportIssuesToJsonAsync(path, issues);
 
+
+                                    break;
                                 }
-                                break;
+                                    if (breakWhileOuter)
+                                    {
+                                        break;
+                                    }
+                            }
+                            }
+                            break;                                
                             case "9. Edit User":
                                 usernameOfChanger = AnsiConsole.Ask<string>("Enter your username to edit user:");
                                 passwordOfChanger = AnsiConsole.Prompt(
@@ -597,7 +713,8 @@ namespace IssueTracker.Business.UI
                                 }
                                 else
                                 {
-                                    AnsiConsole.MarkupLine("[bold red]You can't update any user because of your priviliege![/]");
+                                _logging.Create("You can't update any user because of your priviliege!", new Dictionary<string, object> { { "Error", "User not admin." } });
+                                AnsiConsole.MarkupLine("[bold red]You can't update any user because of your priviliege![/]");
                                 }
                                 break;
                             case "10. Delete User":
@@ -612,16 +729,19 @@ namespace IssueTracker.Business.UI
                                     bool isDeleted = userService.Delete(username);
                                     if (isDeleted)
                                     {
+                                    _logging.Create("User deleted successfully!", new Dictionary<string, object> { { "DeletedAt", DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") } });
                                         AnsiConsole.MarkupLine("[bold green]User deleted successfully![/]");
                                     }
                                     else
                                     {
+                                        _logging.Create("User could not be deleted because of user not exist or already deleted!", new Dictionary<string, object> { { "Error", "User not exist or already deleted." } });
                                         AnsiConsole.MarkupLine("[bold red]User could not be deleted because of user not exist or already deleted![/]");
                                     }
                                 }
                                 else
                                 {
-                                    AnsiConsole.MarkupLine("[bold red]You can't delete any user because of your priviliege![/]");
+                                _logging.Create("You can't delete any user because of your priviliege!", new Dictionary<string, object> { { "Error", "User not admin." } });
+                                AnsiConsole.MarkupLine("[bold red]You can't delete any user because of your priviliege![/]");
                                 }
                                 break;
                             case "11. Exit":

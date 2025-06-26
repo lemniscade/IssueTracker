@@ -27,7 +27,6 @@ namespace IssueTracker.Business.Logging
         }
         public string LogManualError(string message, Dictionary<string, object> context)
         {
-            string user = userService.existUser.Username;
             string timestamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
             var stackTraceObj = new StackTrace(true);
             string stackTrace = stackTraceObj.ToString();
@@ -39,7 +38,6 @@ namespace IssueTracker.Business.Logging
             {
                 timestamp = timestamp,
                 message = message,
-                user = user,
                 location = $"{className}.{methodName}",
                 stackTrace = stackTrace,
                 context = context

@@ -16,6 +16,6 @@ namespace IssueTracker.DataAccess.Repositories
         bool Create(string title, string description, int type, int statusId, int priority, string assigneeUsername, string createdUsername, int effort, string projectTitle, UserService userService);
         bool Update(string findingTitle, string? title, string? description, int? type, int? statusId, int? priority, string? assigneeUsername, string? updatedUsername, int? effort, string? projectTitle);
         bool Delete(string title);
-        List<Issue> GetAll(List<Issue> issues,string? username, string? title, int? type, bool? ascending,int? priority,int? status);
+        List<Issue> GetAll(List<Issue> listToReturn, string username, string title, int? type, int? typeAscending, int? priority, bool? priorityAscending, int? status);
     }
 }

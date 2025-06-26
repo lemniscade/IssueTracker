@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 
 namespace IssueTracker.Entity.Models;
 public class Issue
@@ -26,6 +27,7 @@ public class Issue
     public DateTime AssignedAt { get; set; }
     public int ProjectId { get; set; } = default!;
     public Project Project { get; set; } = default!;
+    [JsonIgnore]
     public ICollection<IssueUser> IssueUsers { get; set; }
 
 }

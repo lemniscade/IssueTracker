@@ -31,13 +31,11 @@ namespace IssueTracker.Business.Services
             _issueRepository.Delete(title);
         }
 
-        public List<Issue> GetAllIssues(List<Issue>  listToReturn,string username, string title, int? type, bool? ascending,int? priority,int? status)
+        public List<Issue> GetAllIssues(List<Issue>  listToReturn,string username, string title, int? type, int? typeAscending,int? priority ,bool? priorityAscending,int? status)
         {
-            List<Issue> issueList=_issueRepository.GetAll(listToReturn, username, title,type,ascending,priority,status);
-            if(issueList.Count == 0)
-            {
-                throw new BusinessException("There is no issue for this operation");
-            }
+            List<Issue> issueList=_issueRepository.GetAll(listToReturn, username, title,type, typeAscending, priority, priorityAscending,status);
+            username = null;
+            title = null;
             return issueList;
             //specter ile foreach ile içinde dön
             //todo
